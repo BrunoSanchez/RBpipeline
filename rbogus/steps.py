@@ -19,18 +19,33 @@
 
 from corral import run
 
-# from . import models
+from . import models
 
 
 # =============================================================================
 # STEPS
 # =============================================================================
 
-class MyStep(run.Step):
+class CrossMatch(run.Step):
 
-    model = None
-    conditions = []
+    mod_image = models.Image
+    mod_detected = models.Detected
+    mod_simulated = models.Simulated
 
-    def process(self, obj):
+    def setup(self):
+        imgs_to_process = self.session.query(mod_image).filter(
+            mod_image.crossmatched == False).order_by(mod_image.id.desc())
+
+    def generate(self):
+        for img in imgs_to_process:
+            detect_to_cx = self.session.query(mod_detected).filter(
+                img.id==mod_detected.image_id).all()
+            simul_to_cx = self.session.query(mod_simulated).filter(
+                img.id==mod_detected.image_id).all()
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def process(self, batch_list):
+
+
         # your logic here
         pass
