@@ -47,7 +47,7 @@ def write_stuffconf(dest_file, stuffconf_dict):
                               trim_blocks=True,
                               lstrip_blocks=True)
 
-    template = jenv.get_template('templates/stuffconf.j2')
+    template = jenv.get_template('rbogus/scripts/templates/stuffconf.j2')
 
     #~ if os.path.exists(stuffconf_dict['cat_name']):
         #~ os.remove(stuffconf_dict['cat_name'])
@@ -68,7 +68,7 @@ def write_skyconf(dest_file, skyconf_dict):
                               trim_blocks=True,
                               lstrip_blocks=True)
 
-    template = jenv.get_template('templates/skyconf.j2')
+    template = jenv.get_template('rbogus/scripts/templates/skyconf.j2')
 
     with open(dest_file, 'w') as f1:
         f1.write(template.render(skyconf_dict))
@@ -100,6 +100,7 @@ def run_sky(skyconf, stuff_cat='', img_path=None, t_exp=None):
 
 
 def run_sex(sexconf, img_path=None, cat_output=None):
+    print os.path.abspath('.')
     if img_path is None:
         print 'Provide an image path'
         return

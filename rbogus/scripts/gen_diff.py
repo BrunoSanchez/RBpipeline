@@ -23,13 +23,14 @@
 #
 
 import os
+import numpy as np
 from astropy.io import ascii
 import simulate_dataset as sd
 import stuffskywrapper as w
 
 from corral.conf import settings
 
-def main(index=0)
+def main(index=0):
     suffix = 'img{}'.format(str(index).zfill(5))
 
     curr_dir = os.path.join(settings.IMGS_PATH, suffix)
@@ -42,7 +43,7 @@ def main(index=0)
     w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
               diff_path, cat_output=cat_out)
 
-    detections = ascii.read(cat_out, format='sextractor')
+    detections = ascii.read(cat_out, format='sextractor').to_pandas()
 
     deltax = list(detections["XMAX_IMAGE"] - detections["XMIN_IMAGE"])
     deltay = list(detections["YMAX_IMAGE"] - detections["YMIN_IMAGE"])
@@ -51,20 +52,20 @@ def main(index=0)
 
     roundness = list(detections["A_IMAGE"] / detections["B_IMAGE"])
 
-    peak_centroid = list(np.sqrt((detections['XPEAK_IMAGE'] - detections['X_IMAGE'])**2
+    pk_cent = list(np.sqrt((detections['XPEAK_IMAGE']-detections['X_IMAGE'])**2
                      + (detections['YPEAK_IMAGE'] - detections['Y_IMAGE'])**2))
 
     detections['DELTAX'] = deltax
     detections['DELTAY'] = deltay
     detections['RATIO'] = ratio
     detections['ROUNDNESS'] = roundness
-    detections['PEAK_CENTROID'] = peak_centroid
+    detections['PEAK_CENTROID'] = pk_cent
 
-    detections['IMAGE'] = np.repeat(diff_path, len(deltax))
+    #detections['IMAGE'] = np.repeat(diff_path, len(deltax))
     detections['id'] = np.repeat(None, len(deltax))
     detections['CROSSMATCHED'] = np.repeat(False, len(deltax))
 
-    return detections
+    return diff_path, detections
 
 
 

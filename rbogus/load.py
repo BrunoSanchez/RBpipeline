@@ -25,12 +25,12 @@ from scripts import gen_diff
 # LOADER
 # =============================================================================
 
-class Loader(run.Loader):
+class Load(run.Loader):
 
     def setup(self):
         index = self.session.query(models.Images.id).order_by(
             models.Images.id.desc()).first()
-        if indexes is not None:
+        if index is not None:
             self.current_index = index + 1
         else:
             self.current_index = 0
@@ -39,6 +39,20 @@ class Loader(run.Loader):
         # self.session.buff = []
 
     def generate(self):
-        detections = gen_diff.main(self.current_index)
+        diff_path, detections = gen_diff.main(self.current_index)
+
+        image = models.Images()
+        image.path = diff_path
+        self.session.add(image)
+        self.session.commit()
+
+        detections['IMAGE_id'] = gen_diff.np.repeat(image.id, len(detections))
+        detections.to_sql('Detected', self.session.get_bind(),
+                           if_exists='append', index=False)
+
+    def teardown(self, type, value, traceback):
+        if not type:
+            self.session.commit()
+
 
 

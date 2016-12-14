@@ -141,8 +141,8 @@ class Detected(db.Model):
     ROUNDNESS = db.Column(db.Float, nullable=False)
     PEAK_CENTROID = db.Column(db.Float, nullable=False)
 
-    image_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
-    image = db.relationship('Images', backref=db.backref('image', order_by=id))
+    IMAGE_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
+    IMAGE = db.relationship('Images', backref=db.backref('image', order_by=id))
 
     CROSSMATCHED = db.Column(db.Boolean, nullable=False)
 
