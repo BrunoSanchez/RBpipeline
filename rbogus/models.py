@@ -26,8 +26,6 @@ class Simulated(db.Model):
     image = db.relationship('Images',
                             backref=db.backref('simulateds', order_by=id))
 
-    crossmatched = db.Column(db.Boolean, nullable=False)
-
     def __repr__(self):
         return self.id
 
@@ -56,6 +54,8 @@ class Images(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     path = db.Column(db.String(100), nullable=False)
+
+    crossmatched = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
         return self.path
@@ -142,9 +142,8 @@ class Detected(db.Model):
     PEAK_CENTROID = db.Column(db.Float, nullable=False)
 
     IMAGE_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
-    IMAGE = db.relationship('Images', backref=db.backref('image', order_by=id))
-
-    CROSSMATCHED = db.Column(db.Boolean, nullable=False)
+    IMAGE = db.relationship('Images',
+                            backref=db.backref('detected_srcs', order_by=id))
 
     def __repr__(self):
         return '{}::{}'.format(self.IMAGE, self.NUMBER)

@@ -81,7 +81,7 @@ def main(imgs_dir):
         #row.extend(np.zeros(9))
         rows.append(row)
 
-    newcat = Table(rows=rows, names=['object_code', 'x', 'y', 'app_mag'])
+    newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag'])
 
     newcat.write(os.path.join(settings.CATS_PATH, 'transient.list'),
                  format='ascii.fast_no_header')
@@ -126,7 +126,7 @@ def main(imgs_dir):
     #~ ois_d = ois.optimal_system(fits.getdata(ref), fits.getdata(ref))[0]
     #~ utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
 
-    return newcat
+    return newcat.to_pandas()
 
 
 if __name__ == '__main__':

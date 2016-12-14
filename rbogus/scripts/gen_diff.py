@@ -60,12 +60,9 @@ def main(index=0):
     detections['RATIO'] = ratio
     detections['ROUNDNESS'] = roundness
     detections['PEAK_CENTROID'] = pk_cent
-
-    #detections['IMAGE'] = np.repeat(diff_path, len(deltax))
     detections['id'] = np.repeat(None, len(deltax))
-    detections['CROSSMATCHED'] = np.repeat(False, len(deltax))
 
-    return diff_path, detections
+    return diff_path, detections, transients
 
 
 
