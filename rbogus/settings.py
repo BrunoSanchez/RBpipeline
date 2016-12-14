@@ -20,9 +20,9 @@ CONNECTION = 'sqlite:///rbogus-dev.db'
 
 LOADER = "rbogus.load.Load"
 
-PIPELINE_SETUP = "rbogus.pipeline.Toritos"
+PIPELINE_SETUP = "rbogus.pipeline.RBogus"
 
-STEPS = ["rbogus.steps.StepDataGenerate"
+STEPS = [#"rbogus.steps.StepDataGenerate"
          ]
 
 ALERTS = []
@@ -32,11 +32,11 @@ SHELL_LOCALS = {
     "np": np
 }
 
-# try:
-#     from .local_settings import *  # noqa
-#     # print "Local settings file found"
-# except ImportError:
-#     print("Local settings not found, using settings.py defaults")
-#     WORK_DIR = os.path.join(os.path.dirname(__file__), "data")
-#     PAWPRINT_PATH = os.path.join(WORK_DIR, "inputdata")
-#     DATA_PATH = os.path.join(WORK_DIR, "outputdata")
+try:
+    from .local_settings import *  # noqa
+    # print "Local settings file found"
+except ImportError:
+    print("Local settings not found, using settings.py defaults")
+    #~ WORK_DIR = os.path.join(os.path.dirname(__file__), "data")
+    #~ PAWPRINT_PATH = os.path.join(WORK_DIR, "inputdata")
+    #~ DATA_PATH = os.path.join(WORK_DIR, "outputdata")

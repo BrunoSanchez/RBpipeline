@@ -18,7 +18,8 @@
 # =============================================================================
 
 from corral import run
-
+from . import models
+from scripts import gen_diff
 
 # =============================================================================
 # LOADER
@@ -26,6 +27,18 @@ from corral import run
 
 class Loader(run.Loader):
 
+    def setup(self):
+        index = self.session.query(models.Images.id).order_by(
+            models.Images.id.desc()).first()
+        if indexes is not None:
+            self.current_index = index + 1
+        else:
+            self.current_index = 0
+
+        self.session.autocommit = False
+        # self.session.buff = []
+
     def generate(self):
-        # write your logic here
-        pass
+        detections = gen_diff.main(self.current_index)
+
+

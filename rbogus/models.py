@@ -21,27 +21,44 @@ class Simulated(db.Model):
     x = db.Column(db.Float, nullable=False)
     y = db.Column(db.Float, nullable=False)
     app_mag = db.Column(db.Float, nullable=False)
-    image = db.Column(String(100), nullable=False)
+
+    image_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
+    image = db.relationship('Images',
+                            backref=db.backref('simulateds', order_by=id))
+
+    crossmatched = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
-        return self.name
+        return self.id
 
-class Real(db.Model):
+class Reals(db.Model):
 
     __tablename__ = "Reals"
 
     id = db.Column(db.Integer, primary_key=True)
 
     detected_id = db.Column(db.Integer, db.ForeignKey('Detected.id'))
-    detected = db.relationship('detected',
+    detected = db.relationship('Detected',
                                backref=db.backref('true_pos', order_by=id))
 
     simulated_id = db.Column(db.Integer, db.ForeignKey('Simulated.id'))
-    simulated = db.relationship('simulated',
+    simulated = db.relationship('Simulated',
                                 backref=db.backref('true_pos'), order_by=id)
 
     def __repr__(self):
-        return self.name
+        return self.id
+
+
+class Images(db.Model):
+
+    __tablename__ = 'Images'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    path = db.Column(db.String(100), nullable=False)
+
+    def __repr__(self):
+        return self.path
 
 
 class Bogus(db.Model):
@@ -51,11 +68,11 @@ class Bogus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     detected_id = db.Column(db.Integer, db.ForeignKey('Detected.id'))
-    detected = db.relationship('detected',
+    detected = db.relationship('Detected',
                                backref=db.backref('true_neg', order_by=id))
 
     def __repr__(self):
-        return self.name
+        return self.id
 
 
 class Undetected(db.Model):
@@ -65,11 +82,11 @@ class Undetected(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     simulated_id = db.Column(db.Integer, db.ForeignKey('Simulated.id'))
-    simulated = db.relationship('simulated',
-                                backref=db.backref('false_neg'), order_by=id)
+    simulated = db.relationship('Simulated',
+                                backref=db.backref('false_neg', order_by=id))
 
     def __repr__(self):
-        return self.name
+        return self.id
 
 
 class Detected(db.Model):
@@ -123,7 +140,11 @@ class Detected(db.Model):
     RATIO = db.Column(db.Float, nullable=False)
     ROUNDNESS = db.Column(db.Float, nullable=False)
     PEAK_CENTROID = db.Column(db.Float, nullable=False)
-    IMAGE = db.Column(String(100), nullable=False)
+
+    image_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
+    image = db.relationship('Images', backref=db.backref('image', order_by=id))
+
+    CROSSMATCHED = db.Column(db.Boolean, nullable=False)
 
     def __repr__(self):
         return '{}::{}'.format(self.IMAGE, self.NUMBER)
