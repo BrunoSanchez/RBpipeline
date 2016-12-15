@@ -50,6 +50,6 @@ def matching(detected, simulated, radius=1., masked=False):
     print len(IDs), len(ind_), len(ind)
     if masked:
         mask = IDs > 0
-        return(IDs, mask, ind_)
-    return(IDs, ind_)
+        return(IDs, mask)
+    return(IDs)
 

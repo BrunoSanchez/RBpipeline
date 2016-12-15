@@ -20,6 +20,7 @@
 from corral import run
 
 from . import models
+from . import util as u
 
 
 # =============================================================================
@@ -49,9 +50,32 @@ class StepCrossMatch(run.Step):
     def process(self, batch_list):
 
         img, detect_to_cx, simul_to_cx = batch_list
-        import ipdb; ipdb.set_trace()
-        masterXY = np.empty((len(detect_to_cx), 2), dtype=np.float64)
-        ref = detect_to_cx.X_IMAGE
+        IDs = u.matching(detect_to_cx, simul_to_cx)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.Reals()
+                real.detected_id = IDs[i]
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.Undetected()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.Bogus()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True
+
+
 
 
 
