@@ -27,7 +27,7 @@ class Simulated(db.Model):
                             backref=db.backref('simulateds', order_by=id))
 
     def __repr__(self):
-        return self.id
+        return str(self.id)
 
 class Reals(db.Model):
 
@@ -44,7 +44,7 @@ class Reals(db.Model):
                                 backref=db.backref('true_pos'), order_by=id)
 
     def __repr__(self):
-        return self.id
+        return str(self.id)
 
 
 class Images(db.Model):
@@ -72,7 +72,7 @@ class Bogus(db.Model):
                                backref=db.backref('true_neg', order_by=id))
 
     def __repr__(self):
-        return self.id
+        return str(self.id)
 
 
 class Undetected(db.Model):
@@ -86,7 +86,7 @@ class Undetected(db.Model):
                                 backref=db.backref('false_neg', order_by=id))
 
     def __repr__(self):
-        return self.id
+        return str(self.id)
 
 
 class Detected(db.Model):
@@ -140,13 +140,14 @@ class Detected(db.Model):
     RATIO = db.Column(db.Float, nullable=False)
     ROUNDNESS = db.Column(db.Float, nullable=False)
     PEAK_CENTROID = db.Column(db.Float, nullable=False)
+    IS_REAL = db.Column(db.Boolean, nullable=True)
 
-    IMAGE_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
-    IMAGE = db.relationship('Images',
+    image_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
+    image = db.relationship('Images',
                             backref=db.backref('detected_srcs', order_by=id))
 
     def __repr__(self):
-        return '{}::{}'.format(self.IMAGE, self.NUMBER)
+        return '{}::{}'.format(self.image, self.NUMBER)
 
 
 

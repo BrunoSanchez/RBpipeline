@@ -47,7 +47,7 @@ class Load(run.Loader):
         self.session.add(image)
         self.session.commit()
 
-        detections['IMAGE_id'] = gen_diff.np.repeat(image.id, len(detections))
+        detections['image_id'] = gen_diff.np.repeat(image.id, len(detections))
         detections.to_sql('Detected', self.session.get_bind(),
                            if_exists='append', index=False)
 

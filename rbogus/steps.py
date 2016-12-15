@@ -26,25 +26,34 @@ from . import models
 # STEPS
 # =============================================================================
 
-class CrossMatch(run.Step):
-
-    mod_image = models.Image
-    mod_detected = models.Detected
-    mod_simulated = models.Simulated
+class StepCrossMatch(run.Step):
 
     def setup(self):
-        imgs_to_process = self.session.query(mod_image).filter(
-            mod_image.crossmatched == False).order_by(mod_image.id.desc())
+        self.imgs_to_process = self.session.query(models.Images).filter(
+            models.Images.crossmatched == False).order_by(models.Images.id)
 
     def generate(self):
-        for img in imgs_to_process:
-            detect_to_cx = self.session.query(mod_detected).filter(
-                img.id==mod_detected.image_id).all()
-            simul_to_cx = self.session.query(mod_simulated).filter(
-                img.id==mod_detected.image_id).all()
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.Detected).filter(
+                img.id==models.Detected.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id).all()
+
             yield [img, detect_to_cx, simul_to_cx]
 
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
     def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        import ipdb; ipdb.set_trace()
+        masterXY = np.empty((len(detect_to_cx), 2), dtype=np.float64)
+        ref = detect_to_cx.X_IMAGE
+
+
 
 
         # your logic here

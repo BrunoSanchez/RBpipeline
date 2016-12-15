@@ -22,7 +22,7 @@ LOADER = "rbogus.load.Load"
 
 PIPELINE_SETUP = "rbogus.pipeline.RBogus"
 
-STEPS = [#"rbogus.steps.StepDataGenerate"
+STEPS = ["rbogus.steps.StepCrossMatch"
          ]
 
 ALERTS = []

@@ -58,7 +58,7 @@ def main(imgs_dir):
     # generate the Reference image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
-               'exp_time'   : 350,
+               'exp_time'   : 300,
                'mag_zp'     : 25.0,
                'px_scale'   : 0.3,
                'seeing_fwhm': 0.90,
@@ -86,7 +86,7 @@ def main(imgs_dir):
     newcat.write(os.path.join(settings.CATS_PATH, 'transient.list'),
                  format='ascii.fast_no_header')
 
-    os.system('cat '+os.path.join(settings.IMGS_PATH, 'ref.list')+' >> '+
+    os.system('cat '+os.path.join(imgs_dir, 'ref.list')+' >> '+
                os.path.join(settings.CATS_PATH, 'transient.list'))
 
     # generate the new image
@@ -95,7 +95,7 @@ def main(imgs_dir):
                'exp_time'   : 300,
                'mag_zp'     : 25.0,
                'px_scale'   : 0.3,
-               'seeing_fwhm': 1.2,
+               'seeing_fwhm': 0.95,
                'starcount_zp': 3e-4,
                'starcount_slope': 0.2
                }
