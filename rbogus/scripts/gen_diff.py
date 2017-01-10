@@ -38,11 +38,20 @@ def main(index=0):
     transients = sd.main(curr_dir)
 
     diff_path = os.path.join(curr_dir, 'diff.fits')
-    cat_out = os.path.join(settings.CATS_PATH,'outcat.dat')
+    cat_out = os.path.join(settings.CATS_PATH, 'outcat.dat')
 
     w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
               diff_path, cat_output=cat_out)
 
+    diff_ois_path = os.path.join(curr_dir, 'diff_ois.fits')
+    cat_ois_out = os.path.join(settings.CATS_PATH, 'outcat_ois.dat')
+
+    w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
+              diff_ois_path, cat_output=cat_ois_out)
+
+# =============================================================================
+#  PS detections
+# =============================================================================
     detections = ascii.read(cat_out, format='sextractor').to_pandas()
 
     deltax = list(detections["XMAX_IMAGE"] - detections["XMIN_IMAGE"])
@@ -62,7 +71,29 @@ def main(index=0):
     detections['PEAK_CENTROID'] = pk_cent
     detections['id'] = np.repeat(None, len(deltax))
 
-    return diff_path, detections, transients
+# =============================================================================
+#   OIS detections
+# =============================================================================
+    detections_ois = ascii.read(cat_ois_out, format='sextractor').to_pandas()
+
+    deltax = list(detections_ois["XMAX_IMAGE"] - detections_ois["XMIN_IMAGE"])
+    deltay = list(detections_ois["YMAX_IMAGE"] - detections_ois["YMIN_IMAGE"])
+    ratio = [float(min(dx,dy))/float(max(dx,dy,1))
+             for dx, dy in zip(deltax, deltay)]
+
+    roundness = list(detections_ois["A_IMAGE"] / detections_ois["B_IMAGE"])
+
+    pk_cent = list(np.sqrt((detections_ois['XPEAK_IMAGE']-detections_ois['X_IMAGE'])**2
+                     + (detections_ois['YPEAK_IMAGE'] - detections_ois['Y_IMAGE'])**2))
+
+    detections_ois['DELTAX'] = deltax
+    detections_ois['DELTAY'] = deltay
+    detections_ois['RATIO'] = ratio
+    detections_ois['ROUNDNESS'] = roundness
+    detections_ois['PEAK_CENTROID'] = pk_cent
+    detections_ois['id'] = np.repeat(None, len(deltax))
+
+    return diff_path, detections, diff_ois_path, detections_ois, transients
 
 
 

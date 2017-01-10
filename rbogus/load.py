@@ -39,11 +39,13 @@ class Load(run.Loader):
         # self.session.buff = []
 
     def generate(self):
-        diff_path, detections, transients = gen_diff.main(self.current_index)
+        diff_path, detections, diff_ois_path, detections_ois, \
+            transients = gen_diff.main(self.current_index)
 
         image = models.Images()
         image.path = diff_path
         image.crossmatched = False
+
         self.session.add(image)
         self.session.commit()
 
@@ -51,7 +53,23 @@ class Load(run.Loader):
         detections.to_sql('Detected', self.session.get_bind(),
                            if_exists='append', index=False)
 
+# =============================================================================
+# OIS
+# =============================================================================
+        image_ois = models.ImagesOIS()
+        image_ois.path = diff_ois_path
+        image_ois.crossmatched = False
+
+        self.session.add(image_ois)
+        self.session.commit()
+
+        detections_ois['image_id'] = gen_diff.np.repeat(image_ois.id,
+                                                        len(detections_ois))
+        detections_ois.to_sql('DetectedOIS', self.session.get_bind(),
+                           if_exists='append', index=False)
+
         transients['image_id'] = gen_diff.np.repeat(image.id, len(transients))
+        transients['image_id_ois'] = gen_diff.np.repeat(image_ois.id, len(transients))
         transients.to_sql('Simulated', self.session.get_bind(),
                           if_exists='append', index=False)
 

@@ -123,8 +123,8 @@ def main(imgs_dir):
 
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
 
-    #~ ois_d = ois.optimal_system(fits.getdata(ref), fits.getdata(ref))[0]
-    #~ utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
+    ois_d = ois.optimal_system(fits.getdata(new), fits.getdata(ref))[0]
+    utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
 
     return newcat.to_pandas()
 
