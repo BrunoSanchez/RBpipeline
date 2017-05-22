@@ -70,7 +70,9 @@ def main(imgs_dir):
     ref = w.run_sky(os.path.join(settings.CONFIG_PATH, 'conf.sky'), cat_name,
                     img_path=os.path.join(imgs_dir, 'ref.fits'))
 
-    # add some transients
+    # add some transients over the galaxies
+    objcat = open(os.path.join(imgs_dir, 'ref.list'))
+    for aline in objcat.
     rows = []
     for i in xrange(40):
         code = 100

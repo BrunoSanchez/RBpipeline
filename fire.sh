@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in {1..10}
+for i in {1..58}
 do
     python in_corral.py load
 done
