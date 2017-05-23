@@ -72,16 +72,30 @@ def main(imgs_dir):
 
     # add some transients over the galaxies
     objcat = open(os.path.join(imgs_dir, 'ref.list'))
-    for aline in objcat.
-    rows = []
-    for i in xrange(40):
-        code = 100
-        x = np.random.randint(20, 1004)
-        y = np.random.randint(20, 1004)
-        app_mag = 4. * np.random.random() + 19.
-        row = [code, x, y, app_mag]
-        #row.extend(np.zeros(9))
-        rows.append(row)
+    for aline in objcat.readlines():
+        row = aline.split()
+        if row[0] == '200':
+            if np.random.random() > 0.4:
+                row = np.array(row, dtype=float)
+                disk_scale_len_px = row[8]/skyconf['px_scale']
+
+                dist_scale_units = np.random.random() * 5.* disk_scale_len_px
+                delta_pos = np.random.random()
+                x = row[1] + delta_pos * dist_scale_units
+                y = row[2] + np.sqrt(1-delta_pos*delta_pos)*dist_scale_units
+
+                app_mag = 4. * np.random.random() + 19.
+                rows.append([100, x, y, app_mag])
+
+    #~ rows = []
+    #~ for i in xrange(40):
+        #~ code = 100
+        #~ x = np.random.randint(20, 1004)
+        #~ y = np.random.randint(20, 1004)
+        #~ app_mag = 4. * np.random.random() + 19.
+        #~ row = [code, x, y, app_mag]
+        #~ #row.extend(np.zeros(9))
+        #~ rows.append(row)
 
     newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag'])
 
