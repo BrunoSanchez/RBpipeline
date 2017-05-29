@@ -85,7 +85,8 @@ def main(imgs_dir):
                 y = row[2] + np.sqrt(1-delta_pos*delta_pos)*dist_scale_units
 
                 app_mag = 4. * np.random.random() + 19.
-                rows.append([100, x, y, app_mag])
+                rows.append([100, x, y, app_mag,
+                             delta_pos*dist_scale_units, row[3])
 
     #~ rows = []
     #~ for i in xrange(40):
@@ -97,10 +98,11 @@ def main(imgs_dir):
         #~ #row.extend(np.zeros(9))
         #~ rows.append(row)
 
-    newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag'])
-
-    newcat.write(os.path.join(settings.CATS_PATH, 'transient.list'),
-                 format='ascii.fast_no_header')
+    newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
+                                     'r_scales', 'gx_mag'])
+    cat_cols = ['code', 'x', 'y', 'app_mag']
+    newcat[cat_cols].write(os.path.join(settings.CATS_PATH, 'transient.list'),
+                           format='ascii.fast_no_header')
 
     os.system('cat '+os.path.join(imgs_dir, 'ref.list')+' >> '+
                os.path.join(settings.CATS_PATH, 'transient.list'))

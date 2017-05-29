@@ -21,6 +21,8 @@ class Simulated(db.Model):
     x = db.Column(db.Float, nullable=False)
     y = db.Column(db.Float, nullable=False)
     app_mag = db.Column(db.Float, nullable=False)
+    dist_in_scale_radius = db.Column(db.Float, nullable=False)
+    host_gx_mag = db.Column(db.Float, nullable=False)
 
     image_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
     image = db.relationship('Images',
