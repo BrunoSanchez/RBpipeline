@@ -71,6 +71,7 @@ def main(imgs_dir):
                     img_path=os.path.join(imgs_dir, 'ref.fits'))
 
     # add some transients over the galaxies
+    rows = []
     objcat = open(os.path.join(imgs_dir, 'ref.list'))
     for aline in objcat.readlines():
         row = aline.split()
@@ -81,12 +82,13 @@ def main(imgs_dir):
 
                 dist_scale_units = np.random.random() * 5.* disk_scale_len_px
                 delta_pos = np.random.random()
+
                 x = row[1] + delta_pos * dist_scale_units
                 y = row[2] + np.sqrt(1-delta_pos*delta_pos)*dist_scale_units
 
                 app_mag = 4. * np.random.random() + 19.
                 rows.append([100, x, y, app_mag,
-                             delta_pos*dist_scale_units, row[3])
+                             delta_pos*dist_scale_units, row[3]])
 
     #~ rows = []
     #~ for i in xrange(40):
@@ -130,12 +132,16 @@ def main(imgs_dir):
         D, P = subtractor.subtract()
 
     xc, yc = np.where(P.real==np.max(P.real))
+
+    print xc, yc
     P = P.real[0:2*np.int(xc), 0:2*np.int(yc)]
 
     d_shifted = np.ones(D.shape) * np.median(D)
-    d_shifted[14:, 14:] = D[7:-7, 7:-7]
+    d_shifted[:-int(xc)/2, :-int(yc)/2] = D[int(xc)/2:, int(yc)/2:]
 
-    D = d_shifted
+    utils.encapsule_R(d_shifted,
+                      path=os.path.join(imgs_dir, 'shifted_diff.fits'))
+    #D = d_shifted
 
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
 
