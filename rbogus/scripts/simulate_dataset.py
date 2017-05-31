@@ -62,7 +62,7 @@ def main(imgs_dir):
                'mag_zp'     : 25.0,
                'px_scale'   : 0.3,
                'seeing_fwhm': 0.90,
-               'starcount_zp': 3e4,
+               'starcount_zp': 6e4,
                'starcount_slope': 0.2
                }
 
@@ -76,7 +76,7 @@ def main(imgs_dir):
     for aline in objcat.readlines():
         row = aline.split()
         if row[0] == '200':
-            if np.random.random() > 0.4:
+            if np.random.random() > 0.7:
                 row = np.array(row, dtype=float)
                 disk_scale_len_px = row[8]/skyconf['px_scale']
 
@@ -128,27 +128,31 @@ def main(imgs_dir):
 
     print 'Images to be subtracted: {} {}'.format(ref, new)
 
+##  With properimage
     with ps.ImageSubtractor(ref, new, align=False) as subtractor:
         D, P = subtractor.subtract()
 
     xc, yc = np.where(P.real==np.max(P.real))
-
-    print xc, yc
+    #print xc, yc
     P = P.real[0:2*np.int(xc), 0:2*np.int(yc)]
 
     d_shifted = np.ones(D.shape) * np.median(D)
     d_shifted[:-int(xc)/2, :-int(yc)/2] = D[int(xc)/2:, int(yc)/2:]
 
-    utils.encapsule_R(d_shifted,
-                      path=os.path.join(imgs_dir, 'shifted_diff.fits'))
+    #utils.encapsule_R(d_shifted,
+    #                  path=os.path.join(imgs_dir, 'shifted_diff.fits'))
     #D = d_shifted
 
-    utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
-
+    utils.encapsule_R(d_shifted, path=os.path.join(imgs_dir, 'diff.fits'))
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
 
+##  With OIS
     ois_d = ois.optimal_system(fits.getdata(new), fits.getdata(ref))[0]
     utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
+
+##  With HOTPANTS
+    os.system('hotpants -inim {} -tmplim {} -outim {}'.format(new, ref,
+        os.path.join(imgs_dir, 'diff_hot.fits')))
 
     return newcat.to_pandas()
 

@@ -39,9 +39,14 @@ class Load(run.Loader):
         # self.session.buff = []
 
     def generate(self):
-        diff_path, detections, diff_ois_path, detections_ois, \
-            transients = gen_diff.main(self.current_index)
+        diff_path, detections, \
+        diff_ois_path, detections_ois, \
+        diff_hot_path, detections_hot, \
+        transients = gen_diff.main(self.current_index)
 
+# =============================================================================
+# properimage
+# =============================================================================
         image = models.Images()
         image.path = diff_path
         image.crossmatched = False
@@ -52,7 +57,7 @@ class Load(run.Loader):
         detections['image_id'] = gen_diff.np.repeat(image.id, len(detections))
         detections.to_sql('Detected', self.session.get_bind(),
                            if_exists='append', index=False)
-
+#------------------------------------------------------------------------------
 # =============================================================================
 # OIS
 # =============================================================================
@@ -67,9 +72,26 @@ class Load(run.Loader):
                                                         len(detections_ois))
         detections_ois.to_sql('DetectedOIS', self.session.get_bind(),
                            if_exists='append', index=False)
+#------------------------------------------------------------------------------
+# =============================================================================
+# HOTPANTS
+# =============================================================================
+        image_hot = models.ImagesHOT()
+        image_hot.path = diff_hot_path
+        image_hot.crossmatched = False
+
+        self.session.add(image_hot)
+        self.session.commit()
+
+        detections_hot['image_id'] = gen_diff.np.repeat(image_hot.id,
+                                                        len(detections_hot))
+        detections_hot.to_sql('DetectedHOT', self.session.get_bind(),
+                           if_exists='append', index=False)
+#------------------------------------------------------------------------------
 
         transients['image_id'] = gen_diff.np.repeat(image.id, len(transients))
         transients['image_id_ois'] = gen_diff.np.repeat(image_ois.id, len(transients))
+        transients['image_id_hot'] = gen_diff.np.repeat(image_hot.id, len(transients))
         transients.to_sql('Simulated', self.session.get_bind(),
                           if_exists='append', index=False)
 

@@ -49,6 +49,12 @@ def main(index=0):
     w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
               diff_ois_path, cat_output=cat_ois_out)
 
+    diff_hot_path = os.path.join(curr_dir, 'diff_hot.fits')
+    cat_hot_out = os.path.join(settings.CATS_PATH, 'outcat_hot.dat')
+
+    w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
+              diff_hot_path, cat_output=cat_hot_out)
+
 # =============================================================================
 #  PS detections
 # =============================================================================
@@ -93,10 +99,29 @@ def main(index=0):
     detections_ois['PEAK_CENTROID'] = pk_cent
     detections_ois['id'] = np.repeat(None, len(deltax))
 
-    return diff_path, detections, diff_ois_path, detections_ois, transients
+# =============================================================================
+#   HOT detections
+# =============================================================================
+    detections_hot = ascii.read(cat_hot_out, format='sextractor').to_pandas()
 
+    deltax = list(detections_hot["XMAX_IMAGE"] - detections_hot["XMIN_IMAGE"])
+    deltay = list(detections_hot["YMAX_IMAGE"] - detections_hot["YMIN_IMAGE"])
+    ratio = [float(min(dx,dy))/float(max(dx,dy,1))
+             for dx, dy in zip(deltax, deltay)]
 
+    roundness = list(detections_hot["A_IMAGE"] / detections_hot["B_IMAGE"])
 
+    pk_cent = list(np.sqrt((detections_hot['XPEAK_IMAGE']-detections_hot['X_IMAGE'])**2
+                     + (detections_hot['YPEAK_IMAGE'] - detections_hot['Y_IMAGE'])**2))
 
+    detections_hot['DELTAX'] = deltax
+    detections_hot['DELTAY'] = deltay
+    detections_hot['RATIO'] = ratio
+    detections_hot['ROUNDNESS'] = roundness
+    detections_hot['PEAK_CENTROID'] = pk_cent
+    detections_hot['id'] = np.repeat(None, len(deltax))
 
+    return [diff_path, detections,
+            diff_ois_path, detections_ois,
+            diff_hot_path, detections_hot, transients]
 
