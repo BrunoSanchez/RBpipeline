@@ -90,8 +90,12 @@ class Load(run.Loader):
 #------------------------------------------------------------------------------
 
         transients['image_id'] = gen_diff.np.repeat(image.id, len(transients))
-        transients['image_id_ois'] = gen_diff.np.repeat(image_ois.id, len(transients))
-        transients['image_id_hot'] = gen_diff.np.repeat(image_hot.id, len(transients))
+
+        transients['image_id_ois'] = gen_diff.np.repeat(image_ois.id,
+                                                        len(transients))
+        transients['image_id_hot'] = gen_diff.np.repeat(image_hot.id,
+                                                        len(transients))
+
         transients.to_sql('Simulated', self.session.get_bind(),
                           if_exists='append', index=False)
 

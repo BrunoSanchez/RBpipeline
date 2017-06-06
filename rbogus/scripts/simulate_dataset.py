@@ -63,7 +63,7 @@ def main(imgs_dir):
                'px_scale'   : 0.3,
                'seeing_fwhm': 0.90,
                'starcount_zp': 6e4,
-               'starcount_slope': 0.2
+               'starcount_slope': 0.3
                }
 
     w.write_skyconf(os.path.join(settings.CONFIG_PATH, 'conf.sky'), skyconf)
@@ -76,7 +76,7 @@ def main(imgs_dir):
     for aline in objcat.readlines():
         row = aline.split()
         if row[0] == '200':
-            if np.random.random() > 0.7:
+            if np.random.random() > 0.80:
                 row = np.array(row, dtype=float)
                 disk_scale_len_px = row[8]/skyconf['px_scale']
 
@@ -86,7 +86,7 @@ def main(imgs_dir):
                 x = row[1] + delta_pos * dist_scale_units
                 y = row[2] + np.sqrt(1-delta_pos*delta_pos)*dist_scale_units
 
-                app_mag = 4. * np.random.random() + 19.
+                app_mag = 4. * (np.random.random()-0.5) + row[3]
                 rows.append([100, x, y, app_mag,
                              delta_pos*dist_scale_units, row[3]])
 
