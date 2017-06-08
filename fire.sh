@@ -1,7 +1,12 @@
 #!/bin/bash
-for i in {1..700}
+for i in {1..8}
 do
-    python in_corral.py load
+    for i in {1..100}
+        do
+            python in_corral.py load
+        done
+    python in_corral.py run
+    python in_corral.py run
+    python in_corral.py run
 done
 
-python in_corral.py run

@@ -33,14 +33,14 @@ class Load(run.Loader):
 
         if last_img is  not None:
             index = last_img.id
-            self.current_index = int(index[0]) + 1
+            self.current_index = int(index) + 1
             if self.current_index%100 is 0:
                 self.current_params = {'zp'   : last_img.refstarcount_zp*2.,
                                        'slope': last_img.refstarcount_slope+0.1,
                                        'fwhm' : last_img.refseeing_fwhm+0.1}
         else:
-            self.current_index = 0
-            self.current_params = {'zp'   : 1e4,
+            self.current_index = 1
+            self.current_params = {'zp'   : 2e3,
                                    'slope': 0.1,
                                    'fwhm' : 0.8}
 
