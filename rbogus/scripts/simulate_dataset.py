@@ -38,7 +38,7 @@ import stuffskywrapper as w
 
 from corral.conf import settings
 
-def main(imgs_dir):
+def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
 
     if not os.path.isdir(imgs_dir):
         os.makedirs(imgs_dir)
@@ -61,9 +61,9 @@ def main(imgs_dir):
                'exp_time'   : 300,
                'mag_zp'     : 25.0,
                'px_scale'   : 0.3,
-               'seeing_fwhm': 0.90,
-               'starcount_zp': 6e4,
-               'starcount_slope': 0.3
+               'seeing_fwhm': refseeing_fwhm,
+               'starcount_zp': refstarcount_zp,
+               'starcount_slope': refstarcount_slope
                }
 
     w.write_skyconf(os.path.join(settings.CONFIG_PATH, 'conf.sky'), skyconf)

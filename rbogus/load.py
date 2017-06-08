@@ -28,27 +28,45 @@ from scripts import gen_diff
 class Load(run.Loader):
 
     def setup(self):
-        index = self.session.query(models.Images.id).order_by(
+        last_img = self.session.query(models.Images).order_by(
             models.Images.id.desc()).first()
-        if index is not None:
+
+        if last_img is  not None:
+            index = last_img.id
             self.current_index = int(index[0]) + 1
+            if self.current_index%100 is 0:
+                self.current_params = {'zp'   : last_img.refstarcount_zp*2.,
+                                       'slope': last_img.refstarcount_slope+0.1,
+                                       'fwhm' : last_img.refseeing_fwhm+0.1}
         else:
             self.current_index = 0
+            self.current_params = {'zp'   : 1e4,
+                                   'slope': 0.1,
+                                   'fwhm' : 0.8}
 
         self.session.autocommit = False
         # self.session.buff = []
 
     def generate(self):
-        diff_path, detections, \
-        diff_ois_path, detections_ois, \
-        diff_hot_path, detections_hot, \
-        transients = gen_diff.main(self.current_index)
+
+        results = gen_diff.main(self.current_index, **self.current_params)
+
+        diff_path      = results[0]
+        detections     = results[1]
+        diff_ois_path  = results[2]
+        detections_ois = results[3]
+        diff_hot_path  = results[4]
+        detections_hot = results[5]
+        transients     = results[6]
 
 # =============================================================================
 # properimage
 # =============================================================================
         image = models.Images()
         image.path = diff_path
+        image.refstarcount_zp = self.current_params['zp']
+        image.refstarcount_slope = self.current_params['slope']
+        image.refseeing_fwhm = self.current_params['fwhm']
         image.crossmatched = False
 
         self.session.add(image)
