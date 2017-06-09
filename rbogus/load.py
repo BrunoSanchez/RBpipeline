@@ -30,7 +30,7 @@ class Load(run.Loader):
     def setup(self):
         last_img = self.session.query(models.Images).order_by(
             models.Images.id.desc()).first()
-
+        self.current_params = None
         if last_img is  not None:
             index = last_img.id
             self.current_index = int(index) + 1
@@ -38,6 +38,10 @@ class Load(run.Loader):
                 self.current_params = {'zp'   : last_img.refstarcount_zp*2.,
                                        'slope': last_img.refstarcount_slope+0.1,
                                        'fwhm' : last_img.refseeing_fwhm+0.1}
+            else:
+                self.current_params = {'zp'   : last_img.refstarcount_zp,
+                                       'slope': last_img.refstarcount_slope,
+                                       'fwhm' : last_img.refseeing_fwhm}
         else:
             self.current_index = 1
             self.current_params = {'zp'   : 2e3,
@@ -48,7 +52,8 @@ class Load(run.Loader):
         # self.session.buff = []
 
     def generate(self):
-
+        print 'current index {}'.format(self.current_index)
+        print 'current params', self.current_params
         results = gen_diff.main(self.current_index, **self.current_params)
 
         diff_path      = results[0]

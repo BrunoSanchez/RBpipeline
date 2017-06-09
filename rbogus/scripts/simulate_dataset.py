@@ -104,7 +104,8 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                                      'r_scales', 'gx_mag'])
     cat_cols = ['code', 'x', 'y', 'app_mag']
     newcat[cat_cols].write(os.path.join(settings.CATS_PATH, 'transient.list'),
-                           format='ascii.fast_no_header')
+                           format='ascii.fast_no_header',
+                           overwrite=True)
 
     os.system('cat '+os.path.join(imgs_dir, 'ref.list')+' >> '+
                os.path.join(settings.CATS_PATH, 'transient.list'))
