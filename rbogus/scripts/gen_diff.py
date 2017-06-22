@@ -36,19 +36,19 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
     curr_dir = os.path.join(settings.IMGS_PATH, suffix)
 
     transients = sd.main(curr_dir, zp, slope, fwhm)
-
+    #
     diff_path = os.path.join(curr_dir, 'diff.fits')
     cat_out = os.path.join(settings.CATS_PATH, 'outcat.dat')
 
     w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
               diff_path, cat_output=cat_out)
-
+    #
     diff_ois_path = os.path.join(curr_dir, 'diff_ois.fits')
     cat_ois_out = os.path.join(settings.CATS_PATH, 'outcat_ois.dat')
 
     w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
               diff_ois_path, cat_output=cat_ois_out)
-
+    #
     diff_hot_path = os.path.join(curr_dir, 'diff_hot.fits')
     cat_hot_out = os.path.join(settings.CATS_PATH, 'outcat_hot.dat')
 
@@ -123,5 +123,6 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
 
     return [diff_path, detections,
             diff_ois_path, detections_ois,
-            diff_hot_path, detections_hot, transients]
+            diff_hot_path, detections_hot,
+            transients]
 
