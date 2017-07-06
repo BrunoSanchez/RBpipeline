@@ -1,7 +1,7 @@
 #!/bin/bash
-for i in {1..8}
+for i in {1..10}
 do
-    for i in {1..100}
+    for i in {1..125}
         do
             python in_corral.py load
         done

@@ -20,6 +20,7 @@
 from corral import run
 from . import models
 from scripts import gen_diff
+from corral.conf import settings as stgs
 
 # =============================================================================
 # LOADER
@@ -34,19 +35,11 @@ class Load(run.Loader):
         if last_img is  not None:
             index = last_img.id
             self.current_index = int(index) + 1
-            if self.current_index%100 is 0:
-                self.current_params = {'zp'   : last_img.refstarcount_zp*2.,
-                                       'slope': last_img.refstarcount_slope+0.1,
-                                       'fwhm' : last_img.refseeing_fwhm+0.1}
-            else:
-                self.current_params = {'zp'   : last_img.refstarcount_zp,
-                                       'slope': last_img.refstarcount_slope,
-                                       'fwhm' : last_img.refseeing_fwhm}
         else:
             self.current_index = 1
-            self.current_params = {'zp'   : 2e3,
-                                   'slope': 0.1,
-                                   'fwhm' : 0.8}
+
+        self.current_params = stgs.SIM_CUBE[
+            self.current_index%len(stgs.SIM_CUBE)]
 
         self.session.autocommit = False
         # self.session.buff = []
