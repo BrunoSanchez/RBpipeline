@@ -23,6 +23,7 @@ LOADER = "rbogus.load.Load"
 PIPELINE_SETUP = "rbogus.pipeline.RBogus"
 
 STEPS = ["rbogus.steps.StepCrossMatch",
+         "rbogus.steps.StepSCrossMatch",
          "rbogus.steps.StepCrossMatchOIS",
          "rbogus.steps.StepCrossMatchHOT"]
 

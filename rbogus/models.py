@@ -28,6 +28,10 @@ class Simulated(db.Model):
     image = db.relationship('Images',
                             backref=db.backref('simulateds', order_by=id))
 
+    simage_id = db.Column(db.Integer, db.ForeignKey('SImages.id'))
+    simage = db.relationship('SImages',
+                             backref=db.backref('simulateds', order_by=id))
+
     image_id_ois = db.Column(db.Integer, db.ForeignKey('ImagesOIS.id'))
     image_ois = db.relationship('ImagesOIS',
                             backref=db.backref('simulateds', order_by=id))
@@ -168,6 +172,124 @@ class Detected(db.Model):
     def __repr__(self):
         return '{}::{}'.format(self.image, self.NUMBER)
 
+# =============================================================================
+#  SDetect Propersubtract tables
+# =============================================================================
+class SImages(db.Model):
+
+    __tablename__ = "SImages"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    path = db.Column(db.String(100), nullable=False)
+
+    crossmatched = db.Column(db.Boolean, nullable=False)
+
+    refstarcount_zp = db.Column(db.Float, nullable=False)
+    refstarcount_slope = db.Column(db.Float, nullable=False)
+    refseeing_fwhm = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return self.path
+
+
+class SReals(db.Model):
+
+    __tablename__ = "SReals"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    detected_id = db.Column(db.Integer, db.ForeignKey('SDetected.id'))
+    detected = db.relationship('SDetected',
+                               backref=db.backref('true_pos_s', order_by=id))
+
+    simulated_id = db.Column(db.Integer, db.ForeignKey('Simulated.id'))
+    simulated = db.relationship('Simulated',
+                                backref=db.backref('true_pos_s'), order_by=id)
+
+    def __repr__(self):
+        return str(self.id)
+
+
+class SBogus(db.Model):
+
+    __tablename__ = "SBogus"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    detected_id = db.Column(db.Integer, db.ForeignKey('SDetected.id'))
+    detected = db.relationship('SDetected',
+                               backref=db.backref('true_neg_s', order_by=id))
+
+    def __repr__(self):
+        return str(self.id)
+
+
+class SUndetected(db.Model):
+
+    __tablename__ = "SUndetected"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    simulated_id = db.Column(db.Integer, db.ForeignKey('Simulated.id'))
+    simulated = db.relationship('Simulated',
+                                backref=db.backref('false_neg_s', order_by=id))
+
+    def __repr__(self):
+        return str(self.id)
+
+
+class SDetected(db.Model):
+
+    __tablename__ = "SDetected"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    thresh = db.Column(db.Float, nullable=False)
+    npix = db.Column(db.Float, nullable=False)
+    tnpix = db.Column(db.Float, nullable=False)
+    xmin = db.Column(db.Float, nullable=False)
+    xmax = db.Column(db.Float, nullable=False)
+    ymin = db.Column(db.Float, nullable=False)
+    ymax = db.Column(db.Float, nullable=False)
+    x = db.Column(db.Float, nullable=False)
+    y = db.Column(db.Float, nullable=False)
+    x2 = db.Column(db.Float, nullable=False)
+    y2 = db.Column(db.Float, nullable=False)
+    xy = db.Column(db.Float, nullable=False)
+    errx2 = db.Column(db.Float, nullable=False)
+    erry2 = db.Column(db.Float, nullable=False)
+    errxy = db.Column(db.Float, nullable=False)
+    a = db.Column(db.Float, nullable=False)
+    b = db.Column(db.Float, nullable=False)
+    theta = db.Column(db.Float, nullable=False)
+    cxx = db.Column(db.Float, nullable=False)
+    cyy = db.Column(db.Float, nullable=False)
+    cxy = db.Column(db.Float, nullable=False)
+    cflux = db.Column(db.Float, nullable=False)
+    flux = db.Column(db.Float, nullable=False)
+    cpeak = db.Column(db.Float, nullable=False)
+    peak = db.Column(db.Float, nullable=False)
+    xcpeak = db.Column(db.Float, nullable=False)
+    ycpeak = db.Column(db.Float, nullable=False)
+    xpeak = db.Column(db.Float, nullable=False)
+    ypeak = db.Column(db.Float, nullable=False)
+    flag = db.Column(db.Float, nullable=False)
+
+    DELTAX = db.Column(db.Float, nullable=False)
+    DELTAY = db.Column(db.Float, nullable=False)
+    RATIO = db.Column(db.Float, nullable=False)
+    ROUNDNESS = db.Column(db.Float, nullable=False)
+    PEAK_CENTROID = db.Column(db.Float, nullable=False)
+    IS_REAL = db.Column(db.Boolean, nullable=True)
+
+    image_id = db.Column(db.Integer, db.ForeignKey('SImages.id'))
+    image = db.relationship('SImages',
+                            backref=db.backref('Sdetected_srcs', order_by=id))
+
+    def __repr__(self):
+        return '{}::{}'.format(self.image, self.id)
+
 
 # =============================================================================
 # OIS tables
@@ -294,7 +416,7 @@ class BogusOIS(db.Model):
 
 
 # =============================================================================
-# OIS tables
+# HOT tables
 # =============================================================================
 class ImagesHOT(db.Model):
 

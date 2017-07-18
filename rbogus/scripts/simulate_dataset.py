@@ -28,6 +28,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.io import ascii
 from astropy.table import Table
+import sep
 
 import ois
 from properimage import propercoadd as pc
@@ -81,24 +82,17 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                 disk_scale_len_px = row[8]/skyconf['px_scale']
 
                 dist_scale_units = np.random.random() * 5.* disk_scale_len_px
-                delta_pos = np.random.random()
+                delta_pos = np.random.random()*2. - 1.
 
                 x = row[1] + delta_pos * dist_scale_units
-                y = row[2] + np.sqrt(1-delta_pos*delta_pos)*dist_scale_units
+                y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units
 
                 app_mag = 4. * (np.random.random()-0.5) + row[3]
-                rows.append([100, x, y, app_mag,
-                             delta_pos*dist_scale_units, row[3]])
-
-    #~ rows = []
-    #~ for i in xrange(40):
-        #~ code = 100
-        #~ x = np.random.randint(20, 1004)
-        #~ y = np.random.randint(20, 1004)
-        #~ app_mag = 4. * np.random.random() + 19.
-        #~ row = [code, x, y, app_mag]
-        #~ #row.extend(np.zeros(9))
-        #~ rows.append(row)
+                if x>1024. or y>1024. or x<0. or y<0.:
+                    continue
+                else:
+                    rows.append([100, x, y, app_mag,
+                                 delta_pos*dist_scale_units, row[3]])
 
     newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
                                      'r_scales', 'gx_mag'])
@@ -130,22 +124,26 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     print 'Images to be subtracted: {} {}'.format(ref, new)
 
 ##  With properimage
-    with ps.ImageSubtractor(ref, new, align=False) as subtractor:
-        D, P = subtractor.subtract()
+    with ps.ImageSubtractor(ref, new, align=False, solve_beta=False) as sub:
+        D, P, S = sub.subtract()
 
-    xc, yc = np.where(P.real==np.max(P.real))
-    #print xc, yc
-    P = P.real[0:2*np.int(xc), 0:2*np.int(yc)]
-
-    d_shifted = np.ones(D.shape) * np.median(D)
-    d_shifted[:-int(xc)/2, :-int(yc)/2] = D[int(xc)/2:, int(yc)/2:]
-
-    #utils.encapsule_R(d_shifted,
-    #                  path=os.path.join(imgs_dir, 'shifted_diff.fits'))
-    #D = d_shifted
-
-    utils.encapsule_R(d_shifted, path=os.path.join(imgs_dir, 'diff.fits'))
+    utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
+    utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))
+
+    sdetected = utils.find_S_local_maxima(S, threshold=2.5)
+    ascii.write(table=np.asarray(sdetected),
+                output=os.path.join(imgs_dir, 's_corr_detected.csv'),
+                names=['X_IMAGE', 'Y_IMAGE', 'SIGNIFICANCE'],
+                format='csv')
+
+    S = np.ascontiguousarray(S)
+    #~ s_bkg = sep.Background(S)
+    sdetected = sep.extract(S, 2.5*np.std(S),
+                            filter_kernel=None)
+    ascii.write(table=sdetected,
+                output=os.path.join(imgs_dir, 'sdetected.csv'),
+                format='csv')
 
 ##  With OIS
     ois_d = ois.optimal_system(fits.getdata(new), fits.getdata(ref))[0]

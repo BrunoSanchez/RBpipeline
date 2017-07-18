@@ -56,6 +56,7 @@ class Load(run.Loader):
         diff_hot_path  = results[4]
         detections_hot = results[5]
         transients     = results[6]
+        sdetections    = results[7]
 
 # =============================================================================
 # properimage
@@ -73,6 +74,23 @@ class Load(run.Loader):
         detections['image_id'] = gen_diff.np.repeat(image.id, len(detections))
         detections.to_sql('Detected', self.session.get_bind(),
                            if_exists='append', index=False)
+
+# =============================================================================
+# sdetect
+# =============================================================================
+        simage = models.SImages()
+        simage.path = diff_path
+        simage.refstarcount_zp = self.current_params['zp']
+        simage.refstarcount_slope = self.current_params['slope']
+        simage.refseeing_fwhm = self.current_params['fwhm']
+        simage.crossmatched = False
+
+        self.session.add(simage)
+        self.session.commit()
+
+        sdetections['image_id'] = gen_diff.np.repeat(simage.id, len(sdetections))
+        sdetections.to_sql('SDetected', self.session.get_bind(),
+                            if_exists='append', index=False)
 #------------------------------------------------------------------------------
 # =============================================================================
 # OIS
@@ -106,6 +124,8 @@ class Load(run.Loader):
 #------------------------------------------------------------------------------
 
         transients['image_id'] = gen_diff.np.repeat(image.id, len(transients))
+
+        transients['simage_id'] = gen_diff.np.repeat(simage.id, len(transients))
 
         transients['image_id_ois'] = gen_diff.np.repeat(image_ois.id,
                                                         len(transients))

@@ -56,6 +56,28 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
               diff_hot_path, cat_output=cat_hot_out)
 
 # =============================================================================
+# S Detections
+# =============================================================================
+    sdetections = ascii.read(os.path.join(curr_dir, 'sdetected.csv')).to_pandas()
+
+    deltax = list(sdetections["xmax"] - sdetections["xmin"])
+    deltay = list(sdetections["ymax"] - sdetections["ymin"])
+    ratio = [float(min(dx,dy))/float(max(dx,dy,1))
+             for dx, dy in zip(deltax, deltay)]
+
+    roundness = list(sdetections["a"] / sdetections["b"])
+
+    pk_cent = list(np.sqrt((sdetections['xcpeak']-sdetections['x'])**2
+                     + (sdetections['ycpeak'] - sdetections['y'])**2))
+
+    sdetections['DELTAX'] = deltax
+    sdetections['DELTAY'] = deltay
+    sdetections['RATIO'] = ratio
+    sdetections['ROUNDNESS'] = roundness
+    sdetections['PEAK_CENTROID'] = pk_cent
+    sdetections['id'] = np.repeat(None, len(deltax))
+
+# =============================================================================
 #  PS detections
 # =============================================================================
     detections = ascii.read(cat_out, format='sextractor').to_pandas()
@@ -124,5 +146,5 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
     return [diff_path, detections,
             diff_ois_path, detections_ois,
             diff_hot_path, detections_hot,
-            transients]
+            transients, sdetections]
 

@@ -9,16 +9,21 @@ import numpy as np
 from astroML import crossmatch as cx
 
 
-def matching(detected, simulated, radius=1., masked=False):
+def matching(detected, simulated, radius=1., masked=False, sep=False):
     """Function to match stars between frames.
     """
 
     masterXY = np.empty((len(detected), 2), dtype=np.float64)
     master_idx = np.zeros(len(detected))
     for i in range(len(detected)):
-        masterXY[i, 0] = detected[i].X_IMAGE
-        masterXY[i, 1] = detected[i].Y_IMAGE
+        if sep:
+            masterXY[i, 0] = detected[i].x
+            masterXY[i, 1] = detected[i].y
+        else:
+            masterXY[i, 0] = detected[i].X_IMAGE
+            masterXY[i, 1] = detected[i].Y_IMAGE
         master_idx[i] = detected[i].id
+
 
     imXY = np.empty((len(simulated), 2), dtype=np.float64)
     for i in range(len(simulated)):

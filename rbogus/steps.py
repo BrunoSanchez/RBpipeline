@@ -76,6 +76,55 @@ class StepCrossMatch(run.Step):
         img.crossmatched = True
 
 
+class StepSCrossMatch(run.Step):
+
+    def setup(self):
+        self.imgs_to_process = self.session.query(models.SImages).filter(
+            models.SImages.crossmatched == False).order_by(models.SImages.id)
+
+    def generate(self):
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.SDetected).filter(
+                img.id==models.SDetected.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id).all()
+
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
+    def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        IDs = u.matching(detect_to_cx, simul_to_cx, sep=True)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.SReals()
+                real.detected_id = IDs[i]
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.SUndetected()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.SBogus()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True
+
+
 class StepCrossMatchOIS(run.Step):
 
     def setup(self):
