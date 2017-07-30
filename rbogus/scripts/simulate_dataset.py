@@ -88,11 +88,11 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                 y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units
 
                 app_mag = 4. * (np.random.random()-0.5) + row[3]
-                if x>1024. or y>1024. or x<0. or y<0.:
+                if x>1014. or y>1014. or x<10. or y<10.:
                     continue
                 else:
                     rows.append([100, x, y, app_mag,
-                                 delta_pos*dist_scale_units, row[3]])
+                                 np.abs(delta_pos)*dist_scale_units, row[3]])
 
     newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
                                      'r_scales', 'gx_mag'])
