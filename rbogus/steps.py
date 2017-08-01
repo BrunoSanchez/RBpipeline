@@ -148,7 +148,7 @@ class StepSCorrCrossMatch(run.Step):
     def process(self, batch_list):
 
         img, detect_to_cx, simul_to_cx = batch_list
-        IDs = u.matching(detect_to_cx, simul_to_cx, sep=True, radius=2.5)
+        IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.5)
 
         for i in range(len(IDs)):
             if IDs[i]>0:
