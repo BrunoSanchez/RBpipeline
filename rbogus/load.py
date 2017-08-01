@@ -95,7 +95,7 @@ class Load(run.Loader):
 # =============================================================================
 # scorrdetect
 # =============================================================================
-        scorrimage = models.SImages()
+        scorrimage = models.SCorrImages()
         scorrimage.path = diff_path
         scorrimage.refstarcount_zp = self.current_params['zp']
         scorrimage.refstarcount_slope = self.current_params['slope']
@@ -105,7 +105,7 @@ class Load(run.Loader):
         self.session.add(scorrimage)
         self.session.commit()
 
-        scorrdetections['image_id'] = gen_diff.np.repeat(scorrimage.id, len(sdetections))
+        scorrdetections['image_id'] = gen_diff.np.repeat(scorrimage.id, len(scorrdetections))
         scorrdetections.to_sql('SCorrDetected', self.session.get_bind(),
                             if_exists='append', index=False)
 #------------------------------------------------------------------------------
