@@ -79,20 +79,20 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
         if row[0] == '200':
             if np.random.random() > 0.80:
                 row = np.array(row, dtype=float)
-                disk_scale_len_px = row[8]/skyconf['px_scale']
+                disk_scale_len = row[8]
+                disk_scale_len_px = disk_scale_len/skyconf['px_scale']
 
-                dist_scale_units = np.random.random() * 5.* disk_scale_len_px
+                dist_scale_units = np.random.random() * 5.
                 delta_pos = np.random.random()*2. - 1.
 
-                x = row[1] + delta_pos * dist_scale_units
-                y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units
+                x = row[1] + delta_pos * dist_scale_units * disk_scale_len_px
+                y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units * disk_scale_len_px
 
                 app_mag = 4. * (np.random.random()-0.5) + row[3]
                 if x>1014. or y>1014. or x<10. or y<10.:
                     continue
                 else:
-                    rows.append([100, x, y, app_mag,
-                                 dist_scale_units/disk_scale_len_px, row[3]])
+                    rows.append([100, x, y, app_mag, dist_scale_units, row[3]])
 
     newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
                                      'r_scales', 'gx_mag'])
@@ -131,7 +131,8 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
     utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))
 
-    sdetected = utils.find_S_local_maxima(S, threshold=2.5)
+    sdetected = utils.find_S_local_maxima(S, threshold=3.5)
+    print 'S_corr found thath {} transients were above 3.5 sigmas'.format(len(sdetected))
     ascii.write(table=np.asarray(sdetected),
                 output=os.path.join(imgs_dir, 's_corr_detected.csv'),
                 names=['X_IMAGE', 'Y_IMAGE', 'SIGNIFICANCE'],
@@ -139,8 +140,11 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
 
     S = np.ascontiguousarray(S)
     #~ s_bkg = sep.Background(S)
-    sdetected = sep.extract(S, 2.5*np.std(S),
+    from astropy.stats import sigma_clipped_stats
+    mean, median, std = sigma_clipped_stats(S)
+    sdetected = sep.extract(S, 3.5*std,
                             filter_kernel=None)
+    print 'S_corr with sep found thath {} transients were above 3.5 sigmas'.format(len(sdetected))
     ascii.write(table=sdetected,
                 output=os.path.join(imgs_dir, 'sdetected.csv'),
                 format='csv')

@@ -131,7 +131,7 @@ class Load(run.Loader):
                                                         len(transients))
         transients['image_id_hot'] = gen_diff.np.repeat(image_hot.id,
                                                         len(transients))
-
+        # print transients
         transients.to_sql('Simulated', self.session.get_bind(),
                           if_exists='append', index=False)
 
