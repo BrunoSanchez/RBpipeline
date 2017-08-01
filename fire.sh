@@ -5,8 +5,9 @@ do
         do
             python in_corral.py load
         done
-    python in_corral.py run
-    python in_corral.py run
-    python in_corral.py run
+    python in_corral.py run -s StepCrossMatch
+    python in_corral.py run -s StepSCrossMatch
+    python in_corral.py run -s StepCrossMatchOIS
+    python in_corral.py run -s StepCrossMatchHOT
 done
 

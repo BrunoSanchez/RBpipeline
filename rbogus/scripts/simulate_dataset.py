@@ -92,7 +92,7 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                     continue
                 else:
                     rows.append([100, x, y, app_mag,
-                                 dist_scale_units, row[3]])
+                                 dist_scale_units/disk_scale_len_px, row[3]])
 
     newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
                                      'r_scales', 'gx_mag'])
