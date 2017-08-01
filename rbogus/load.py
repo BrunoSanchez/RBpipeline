@@ -57,6 +57,7 @@ class Load(run.Loader):
         detections_hot = results[5]
         transients     = results[6]
         sdetections    = results[7]
+        scorrdetections= results[8]
 
 # =============================================================================
 # properimage
@@ -90,6 +91,22 @@ class Load(run.Loader):
 
         sdetections['image_id'] = gen_diff.np.repeat(simage.id, len(sdetections))
         sdetections.to_sql('SDetected', self.session.get_bind(),
+                            if_exists='append', index=False)
+# =============================================================================
+# scorrdetect
+# =============================================================================
+        scorrimage = models.SImages()
+        scorrimage.path = diff_path
+        scorrimage.refstarcount_zp = self.current_params['zp']
+        scorrimage.refstarcount_slope = self.current_params['slope']
+        scorrimage.refseeing_fwhm = self.current_params['fwhm']
+        scorrimage.crossmatched = False
+
+        self.session.add(scorrimage)
+        self.session.commit()
+
+        scorrdetections['image_id'] = gen_diff.np.repeat(scorrimage.id, len(sdetections))
+        scorrdetections.to_sql('SCorrDetected', self.session.get_bind(),
                             if_exists='append', index=False)
 #------------------------------------------------------------------------------
 # =============================================================================

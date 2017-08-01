@@ -24,6 +24,7 @@ PIPELINE_SETUP = "rbogus.pipeline.RBogus"
 
 STEPS = ["rbogus.steps.StepCrossMatch",
          "rbogus.steps.StepSCrossMatch",
+         "rbogus.steps.StepSCorrCrossMatch"
          "rbogus.steps.StepCrossMatchOIS",
          "rbogus.steps.StepCrossMatchHOT"]
 

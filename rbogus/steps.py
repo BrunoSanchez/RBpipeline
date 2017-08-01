@@ -125,6 +125,55 @@ class StepSCrossMatch(run.Step):
         img.crossmatched = True
 
 
+class StepSCorrCrossMatch(run.Step):
+
+    def setup(self):
+        self.imgs_to_process = self.session.query(models.SCorrImages).filter(
+            models.SCorrImages.crossmatched == False).order_by(models.SCorrImages.id)
+
+    def generate(self):
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.SCorrDetected).filter(
+                img.id==models.SCorrDetected.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id).all()
+
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
+    def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        IDs = u.matching(detect_to_cx, simul_to_cx, sep=True, radius=2.5)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.SCorrReals()
+                real.detected_id = IDs[i]
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.SCorrUndetected()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.SCorrBogus()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True
+
+
 class StepCrossMatchOIS(run.Step):
 
     def setup(self):

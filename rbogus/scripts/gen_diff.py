@@ -56,6 +56,12 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
               diff_hot_path, cat_output=cat_hot_out)
 
 # =============================================================================
+# SCorr Detections
+# =============================================================================
+    scorrdetections = ascii.read(os.path.join(curr_dir, 's_corr_detected.csv')).to_pandas()
+    scorrdetections['id'] = np.repeat(None, len(scorrdetections))
+
+# =============================================================================
 # S Detections
 # =============================================================================
     sdetections = ascii.read(os.path.join(curr_dir, 'sdetected.csv')).to_pandas()
@@ -146,5 +152,5 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
     return [diff_path, detections,
             diff_ois_path, detections_ois,
             diff_hot_path, detections_hot,
-            transients, sdetections]
+            transients, sdetections, scorrdetections]
 

@@ -32,6 +32,10 @@ class Simulated(db.Model):
     simage = db.relationship('SImages',
                              backref=db.backref('simulateds', order_by=id))
 
+    scorrimage_id = db.Column(db.Integer, db.ForeignKey('SCorrImages.id'))
+    scorrimage = db.relationship('SCorrImages',
+                             backref=db.backref('simulateds', order_by=id))
+
     image_id_ois = db.Column(db.Integer, db.ForeignKey('ImagesOIS.id'))
     image_ois = db.relationship('ImagesOIS',
                             backref=db.backref('simulateds', order_by=id))
@@ -286,6 +290,92 @@ class SDetected(db.Model):
     image_id = db.Column(db.Integer, db.ForeignKey('SImages.id'))
     image = db.relationship('SImages',
                             backref=db.backref('Sdetected_srcs', order_by=id))
+
+    def __repr__(self):
+        return '{}::{}'.format(self.image, self.id)
+
+# =============================================================================
+#  SCOrrDetect Propersubtract tables
+# =============================================================================
+class SCorrImages(db.Model):
+
+    __tablename__ = "SCorrImages"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    path = db.Column(db.String(100), nullable=False)
+
+    crossmatched = db.Column(db.Boolean, nullable=False)
+
+    refstarcount_zp = db.Column(db.Float, nullable=False)
+    refstarcount_slope = db.Column(db.Float, nullable=False)
+    refseeing_fwhm = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return self.path
+
+
+class SCorrReals(db.Model):
+
+    __tablename__ = "SCorrReals"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    detected_id = db.Column(db.Integer, db.ForeignKey('SCorrDetected.id'))
+    detected = db.relationship('SCorrDetected',
+                               backref=db.backref('true_pos_scorr', order_by=id))
+
+    simulated_id = db.Column(db.Integer, db.ForeignKey('Simulated.id'))
+    simulated = db.relationship('Simulated',
+                                backref=db.backref('true_pos_scorr'), order_by=id)
+
+    def __repr__(self):
+        return str(self.id)
+
+
+class SCorrBogus(db.Model):
+
+    __tablename__ = "SCorrBogus"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    detected_id = db.Column(db.Integer, db.ForeignKey('SCorrDetected.id'))
+    detected = db.relationship('SCorrDetected',
+                               backref=db.backref('true_neg_scorr', order_by=id))
+
+    def __repr__(self):
+        return str(self.id)
+
+
+class SCorrUndetected(db.Model):
+
+    __tablename__ = "SCorrUndetected"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    simulated_id = db.Column(db.Integer, db.ForeignKey('Simulated.id'))
+    simulated = db.relationship('Simulated',
+                                backref=db.backref('false_neg_scorr', order_by=id))
+
+    def __repr__(self):
+        return str(self.id)
+
+
+class SCorrDetected(db.Model):
+
+    __tablename__ = "SCorrDetected"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    X_IMAGE = db.Column(db.Float, nullable=False)
+    Y_IMAGE = db.Column(db.Float, nullable=False)
+    SIGNIFICANCE = db.Column(db.Float, nullable=False)
+
+    IS_REAL = db.Column(db.Boolean, nullable=True)
+
+    image_id = db.Column(db.Integer, db.ForeignKey('SCorrImages.id'))
+    image = db.relationship('SCorrImages',
+                            backref=db.backref('SCorrdetected_srcs', order_by=id))
 
     def __repr__(self):
         return '{}::{}'.format(self.image, self.id)

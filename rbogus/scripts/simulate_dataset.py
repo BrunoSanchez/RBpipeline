@@ -131,9 +131,9 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
     utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))
 
-    sdetected = utils.find_S_local_maxima(S, threshold=3.5)
-    print 'S_corr found thath {} transients were above 3.5 sigmas'.format(len(sdetected))
-    ascii.write(table=np.asarray(sdetected),
+    scorrdetected = utils.find_S_local_maxima(S, threshold=3.5)
+    print 'S_corr found thath {} transients were above 3.5 sigmas'.format(len(scorrdetected))
+    ascii.write(table=np.asarray(scorrdetected),
                 output=os.path.join(imgs_dir, 's_corr_detected.csv'),
                 names=['X_IMAGE', 'Y_IMAGE', 'SIGNIFICANCE'],
                 format='csv')
