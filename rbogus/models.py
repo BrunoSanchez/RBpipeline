@@ -65,6 +65,7 @@ class Images(db.Model):
     refstarcount_zp = db.Column(db.Float, nullable=False)
     refstarcount_slope = db.Column(db.Float, nullable=False)
     refseeing_fwhm = db.Column(db.Float, nullable=False)
+    exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return self.path
@@ -192,6 +193,7 @@ class SImages(db.Model):
     refstarcount_zp = db.Column(db.Float, nullable=False)
     refstarcount_slope = db.Column(db.Float, nullable=False)
     refseeing_fwhm = db.Column(db.Float, nullable=False)
+    exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return self.path
@@ -310,6 +312,7 @@ class SCorrImages(db.Model):
     refstarcount_zp = db.Column(db.Float, nullable=False)
     refstarcount_slope = db.Column(db.Float, nullable=False)
     refseeing_fwhm = db.Column(db.Float, nullable=False)
+    exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return self.path
@@ -393,6 +396,7 @@ class ImagesOIS(db.Model):
     path = db.Column(db.String(100), nullable=False)
 
     crossmatched = db.Column(db.Boolean, nullable=False)
+    exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return self.path
@@ -517,6 +521,7 @@ class ImagesHOT(db.Model):
     path = db.Column(db.String(100), nullable=False)
 
     crossmatched = db.Column(db.Boolean, nullable=False)
+    exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
         return self.path

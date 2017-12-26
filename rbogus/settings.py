@@ -16,7 +16,7 @@ LOG_LEVEL = logging.WARNING
 
 LOG_FORMAT = "[RBogus-%(levelname)s @ %(asctime)-15s] %(message)s"
 
-CONNECTION = 'sqlite:///rbogus-dev.db'
+CONNECTION = 'sqlite:///newrbogus22-dev.db'
 
 LOADER = "rbogus.load.Load"
 
@@ -24,7 +24,7 @@ PIPELINE_SETUP = "rbogus.pipeline.RBogus"
 
 STEPS = ["rbogus.steps.StepCrossMatch",
          "rbogus.steps.StepSCrossMatch",
-         "rbogus.steps.StepSCorrCrossMatch"
+         "rbogus.steps.StepSCorrCrossMatch",
          "rbogus.steps.StepCrossMatchOIS",
          "rbogus.steps.StepCrossMatchHOT"]
 

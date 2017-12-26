@@ -35,7 +35,8 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
 
     curr_dir = os.path.join(settings.IMGS_PATH, suffix)
 
-    transients = sd.main(curr_dir, zp, slope, fwhm)
+    #Generation happens here
+    transients, times = sd.main(curr_dir, zp, slope, fwhm)
     #
     diff_path = os.path.join(curr_dir, 'diff.fits')
     cat_out = os.path.join(settings.CATS_PATH, 'outcat.dat')
@@ -152,5 +153,5 @@ def main(index=0, zp=6e4, slope=0.3, fwhm=0.9):
     return [diff_path, detections,
             diff_ois_path, detections_ois,
             diff_hot_path, detections_hot,
-            transients, sdetections, scorrdetections]
+            transients, sdetections, scorrdetections, times]
 

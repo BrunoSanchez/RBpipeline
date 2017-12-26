@@ -58,6 +58,7 @@ class Load(run.Loader):
         transients     = results[6]
         sdetections    = results[7]
         scorrdetections= results[8]
+        times          = results[9]
 
 # =============================================================================
 # properimage
@@ -68,6 +69,7 @@ class Load(run.Loader):
         image.refstarcount_slope = self.current_params['slope']
         image.refseeing_fwhm = self.current_params['fwhm']
         image.crossmatched = False
+        image.exec_time = times[0]
 
         self.session.add(image)
         self.session.commit()
@@ -85,6 +87,7 @@ class Load(run.Loader):
         simage.refstarcount_slope = self.current_params['slope']
         simage.refseeing_fwhm = self.current_params['fwhm']
         simage.crossmatched = False
+        simage.exec_time = times[0]
 
         self.session.add(simage)
         self.session.commit()
@@ -101,6 +104,7 @@ class Load(run.Loader):
         scorrimage.refstarcount_slope = self.current_params['slope']
         scorrimage.refseeing_fwhm = self.current_params['fwhm']
         scorrimage.crossmatched = False
+        scorrimage.exec_time = times[0]
 
         self.session.add(scorrimage)
         self.session.commit()
@@ -115,6 +119,7 @@ class Load(run.Loader):
         image_ois = models.ImagesOIS()
         image_ois.path = diff_ois_path
         image_ois.crossmatched = False
+        image_ois.exec_time = times[1]
 
         self.session.add(image_ois)
         self.session.commit()
@@ -130,6 +135,7 @@ class Load(run.Loader):
         image_hot = models.ImagesHOT()
         image_hot.path = diff_hot_path
         image_hot.crossmatched = False
+        image_hot.exec_time = times[2]
 
         self.session.add(image_hot)
         self.session.commit()

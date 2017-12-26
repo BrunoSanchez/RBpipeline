@@ -31,7 +31,7 @@ from astropy.table import Table
 import sep
 
 import ois
-from properimage import propercoadd as pc
+from properimage import single_image as si
 from properimage import propersubtract as ps
 from properimage import utils
 
@@ -59,8 +59,8 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     # generate the Reference image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
-               'exp_time'   : 300,
-               'mag_zp'     : 25.0,
+               'exp_time'   : 600,
+               'mag_zp'     : 25.,
                'px_scale'   : 0.3,
                'seeing_fwhm': refseeing_fwhm,
                'starcount_zp': refstarcount_zp,
@@ -107,10 +107,10 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     # generate the new image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
-               'exp_time'   : 300,
+               'exp_time'   : 600,
                'mag_zp'     : 25.0,
                'px_scale'   : 0.3,
-               'seeing_fwhm': 0.95,
+               'seeing_fwhm': 1.55,
                'starcount_zp': 3e-4,
                'starcount_slope': 0.2
                }
@@ -124,8 +124,12 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     print 'Images to be subtracted: {} {}'.format(ref, new)
 
 ##  With properimage
-    with ps.ImageSubtractor(ref, new, align=False, solve_beta=False) as sub:
-        D, P, S = sub.subtract()
+    #with ps.ImageSubtractor(ref, new, align=False, solve_beta=False) as sub:
+    #    D, P, S = sub.subtract()
+    import time
+    t0 = time.time()
+    D, P, S, mask = ps.diff(ref, new, align=False, beta=False, iterative=False, shift=False)
+    dt_z = time.time() - t0
 
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
@@ -142,7 +146,7 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     #~ s_bkg = sep.Background(S)
     from astropy.stats import sigma_clipped_stats
     mean, median, std = sigma_clipped_stats(S)
-    sdetected = sep.extract(S, 3.5*std,
+    sdetected = sep.extract(S-median, 3.5*std,
                             filter_kernel=None)
     print 'S_corr with sep found thath {} transients were above 3.5 sigmas'.format(len(sdetected))
     ascii.write(table=sdetected,
@@ -150,14 +154,18 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                 format='csv')
 
 ##  With OIS
+    t0 = time.time()
     ois_d = ois.optimal_system(fits.getdata(new), fits.getdata(ref))[0]
+    dt_o = time.time() - t0
     utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
 
 ##  With HOTPANTS
-    os.system('hotpants -inim {} -tmplim {} -outim {}'.format(new, ref,
+    t0 = time.time()
+    os.system('hotpants -v 0 -inim {} -tmplim {} -outim {}'.format(new, ref,
         os.path.join(imgs_dir, 'diff_hot.fits')))
+    dt_h = time.time() - t0
 
-    return newcat.to_pandas()
+    return [newcat.to_pandas(), [dt_z, dt_o, dt_h]]
 
 
 if __name__ == '__main__':
