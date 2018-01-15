@@ -161,7 +161,7 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
 
 ##  With HOTPANTS
     t0 = time.time()
-    os.system('hotpants -v 0 -inim {} -tmplim {} -outim {}'.format(new, ref,
+    os.system('hotpants -v 0 -inim {} -tmplim {} -outim {} -tu 400000 -iu 40000'.format(new, ref,
         os.path.join(imgs_dir, 'diff_hot.fits')))
     dt_h = time.time() - t0
 

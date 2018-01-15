@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in {1..10}
+for i in {1..9}
 do
     for i in {1..125}
         do
