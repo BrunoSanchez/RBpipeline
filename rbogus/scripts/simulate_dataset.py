@@ -68,7 +68,7 @@ def main(imgs_dir, sim_cube={}):
                'px_scale'   : sim_cube['px_scale'],
                'seeing_fwhm': sim_cube['ref_fwhm'],
                'starcount_zp': sim_cube['ref_starzp'],
-               'starcount_slope': sim_cube['ref_starslope']
+               'starcount_slope': sim_cube['ref_starslope'],
                'm1_diam'    : sim_cube['m1_diam'],
                'm2_diam'    : sim_cube['m2_diam'],
                'back_sbright' : sim_cube['ref_back_sbright']

@@ -28,9 +28,9 @@ else:
                                         for ref_back_sbright in [20., 21., 22.]:
                                             for new_back_sbright in [20, 19., 18]:
 
-                                        confs = {
+                                                confs = {
                                                  'ref_starzp': ref_starzp,
-                                                 'ref_starslope': ref_slope,
+                                                 'ref_starslope': ref_starslope,
                                                  'ref_fwhm': ref_fwhm,
                                                  'new_fwhm': new_fwhm,
                                                  'm1_diam': m1,
@@ -42,6 +42,6 @@ else:
                                                  'ref_back_sbright' : ref_back_sbright,
                                                  'new_back_sbright' : new_back_sbright
                                                  }
-                                        SIM_CUBE.append(confs)
+                                                SIM_CUBE.append(confs)
     with open('sim_cube.pkl', 'wb') as fp:
         ujson.dump(SIM_CUBE, fp)
