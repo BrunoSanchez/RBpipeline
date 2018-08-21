@@ -39,7 +39,8 @@ import stuffskywrapper as w
 
 from corral.conf import settings
 
-def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
+def main(imgs_dir, sim_cube={}):
+    # refstarcount_zp, refstarcount_slope, refseeing_fwhm):
 
     if not os.path.isdir(imgs_dir):
         os.makedirs(imgs_dir)
@@ -48,7 +49,10 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
     stuffconf = {'cat_name' : os.path.join(settings.CATS_PATH, 'gxcat.list'),
                  'im_w'     : 1024,
                  'im_h'     : 1024,
-                 'px_scale' : 0.3
+                 'px_scale' : sim_cube['px_scale'],
+                 'eff_col'  : sim_cube['eff_col'],
+                 'l'        : sim_cube['l'],
+                 'b'        : sim_cube['b']
                  }
 
     w.write_stuffconf(os.path.join(settings.CONFIG_PATH, 'conf.stuff'),
@@ -61,10 +65,13 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                'image_size' : 1024,
                'exp_time'   : 600,
                'mag_zp'     : 25.,
-               'px_scale'   : 0.3,
-               'seeing_fwhm': refseeing_fwhm,
-               'starcount_zp': refstarcount_zp,
-               'starcount_slope': refstarcount_slope
+               'px_scale'   : sim_cube['px_scale'],
+               'seeing_fwhm': sim_cube['ref_fwhm'],
+               'starcount_zp': sim_cube['ref_starzp'],
+               'starcount_slope': sim_cube['ref_starslope']
+               'm1_diam'    : sim_cube['m1_diam'],
+               'm2_diam'    : sim_cube['m2_diam'],
+               'back_sbright' : sim_cube['ref_back_sbright']
                }
 
     w.write_skyconf(os.path.join(settings.CONFIG_PATH, 'conf.sky'), skyconf)
@@ -88,7 +95,7 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                 x = row[1] + delta_pos * dist_scale_units * disk_scale_len_px
                 y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units * disk_scale_len_px
 
-                app_mag = 4. * (np.random.random()-0.5) + row[3]
+                app_mag = 5. * (np.random.random()-0.8) + row[3]
                 if x>1014. or y>1014. or x<10. or y<10.:
                     continue
                 else:
@@ -109,10 +116,13 @@ def main(imgs_dir, refstarcount_zp, refstarcount_slope, refseeing_fwhm):
                'image_size' : 1024,
                'exp_time'   : 600,
                'mag_zp'     : 25.0,
-               'px_scale'   : 0.3,
-               'seeing_fwhm': 1.55,
+               'px_scale'   : sim_cube['px_scale'],
+               'seeing_fwhm': sim_cube['new_fwhm'],
                'starcount_zp': 3e-4,
-               'starcount_slope': 0.2
+               'starcount_slope': 0.2,
+               'm1_diam'    : sim_cube['m1_diam'],
+               'm2_diam'    : sim_cube['m2_diam'],
+               'back_sbright' : sim_cube['new_back_sbright']
                }
 
     cat_name = os.path.join(settings.CATS_PATH, 'transient.list')

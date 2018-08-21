@@ -47,7 +47,7 @@ class Load(run.Loader):
     def generate(self):
         print 'current index {}'.format(self.current_index)
         print 'current params', self.current_params
-        results = gen_diff.main(self.current_index, **self.current_params)
+        results = gen_diff.main(self.current_index, self.current_params)
 
         diff_path      = results[0]
         detections     = results[1]
@@ -65,9 +65,9 @@ class Load(run.Loader):
 # =============================================================================
         image = models.Images()
         image.path = diff_path
-        image.refstarcount_zp = self.current_params['zp']
-        image.refstarcount_slope = self.current_params['slope']
-        image.refseeing_fwhm = self.current_params['fwhm']
+        image.refstarcount_zp = self.current_params['ref_starzp']
+        image.refstarcount_slope = self.current_params['ref_starslope']
+        image.refseeing_fwhm = self.current_params['ref_fwhm']
         image.crossmatched = False
         image.exec_time = times[0]
 
@@ -83,9 +83,9 @@ class Load(run.Loader):
 # =============================================================================
         simage = models.SImages()
         simage.path = diff_path
-        simage.refstarcount_zp = self.current_params['zp']
-        simage.refstarcount_slope = self.current_params['slope']
-        simage.refseeing_fwhm = self.current_params['fwhm']
+        simage.refstarcount_zp = self.current_params['ref_starzp']
+        simage.refstarcount_slope = self.current_params['ref_starslope']
+        simage.refseeing_fwhm = self.current_params['ref_fwhm']
         simage.crossmatched = False
         simage.exec_time = times[0]
 
@@ -100,9 +100,9 @@ class Load(run.Loader):
 # =============================================================================
         scorrimage = models.SCorrImages()
         scorrimage.path = diff_path
-        scorrimage.refstarcount_zp = self.current_params['zp']
-        scorrimage.refstarcount_slope = self.current_params['slope']
-        scorrimage.refseeing_fwhm = self.current_params['fwhm']
+        scorrimage.refstarcount_zp = self.current_params['ref_starzp']
+        scorrimage.refstarcount_slope = self.current_params['ref_starslope']
+        scorrimage.refseeing_fwhm = self.current_params['ref_fwhm']
         scorrimage.crossmatched = False
         scorrimage.exec_time = times[0]
 
