@@ -38,8 +38,15 @@ class Load(run.Loader):
         else:
             self.current_index = 1
 
-        self.current_params = stgs.SIM_CUBE[
-            self.current_index%len(stgs.SIM_CUBE)]
+        if type(stgs.SIM_CUBE) is str:
+            import ujson
+            with open(stgs.SIM_CUBE, 'rb') as fp:
+                SIM_CUBE = ujson.load(fp)
+        else:
+            SIM_CUBE = stgs.SIM_CUBE
+
+        self.current_params = SIM_CUBE[
+            self.current_index%len(SIM_CUBE)]
 
         self.session.autocommit = False
         # self.session.buff = []
