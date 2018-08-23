@@ -16,7 +16,7 @@ LOG_LEVEL = logging.WARNING
 
 LOG_FORMAT = "[RBogus-%(levelname)s @ %(asctime)-15s] %(message)s"
 
-CONNECTION = 'sqlite:///rbogus-dev.db'
+CONNECTION = 'sqlite:///resimulation-dev.db'
 
 LOADER = "rbogus.load.Load"
 

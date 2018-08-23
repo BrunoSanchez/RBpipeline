@@ -12,7 +12,7 @@ MAG_LIMITS      16.0,24.0       # allowed range of apparent magnitudes
 
 #------------------------ Zero-points and Background -------------------------
 
-COLLECT_AREA    1.0             # Effective collecting area(s) (in m2)
+COLLECT_AREA    {{ eff_col }}             # Effective collecting area(s) (in m2)
 GAIN            1.0             # Detector conversion factor(s) (in e-/ADU)
 SED_BACKGROUND  zodiacal        # Background SED
 
@@ -105,7 +105,7 @@ LENS_GAMMA      0.0,0.0         # weak lensing (constant) shear parameters
 #------------------------------ Stellar field --------------------------------
 
 INCLUDE_STARS   Y               # allow addition of a stellar field?
-GALACTIC_COORDS 270,30.0        # galactic coordinates
+GALACTIC_COORDS {{ l }}, {{b}}        # galactic coordinates
 SED_STARS       Vega            # stellar SEDs
 
 #----------------------------- Random Seeds ----------------------------------

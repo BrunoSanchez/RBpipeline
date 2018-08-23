@@ -62,9 +62,19 @@ class Images(db.Model):
 
     crossmatched = db.Column(db.Boolean, nullable=False)
 
-    refstarcount_zp = db.Column(db.Float, nullable=False)
-    refstarcount_slope = db.Column(db.Float, nullable=False)
-    refseeing_fwhm = db.Column(db.Float, nullable=False)
+    ref_starzp = db.Column(db.Float, nullable=False)
+    ref_starslope = db.Column(db.Float, nullable=False)
+    ref_fwhm = db.Column(db.Float, nullable=False)
+    new_fwhm = db.Column(db.Float, nullable=False)
+    m1_diam = db.Column(db.Float, nullable=False)
+    m2_diam = db.Column(db.Float, nullable=False)
+    l = db.Column(db.Float, nullable=False)
+    b = db.Column(db.Float, nullable=False)
+    eff_col = db.Column(db.Float, nullable=False)
+    px_scale = db.Column(db.Float, nullable=False)
+    ref_back_sbright = db.Column(db.Float, nullable=False)
+    new_back_sbright = db.Column(db.Float, nullable=False)
+
     exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
@@ -162,6 +172,9 @@ class Detected(db.Model):
     ELONGATION = db.Column(db.Float, nullable=False)
     ELLIPTICITY = db.Column(db.Float, nullable=False)
     CLASS_STAR = db.Column(db.Float, nullable=False)
+    MU_THRESHOLD = db.Column(db.Float, nullable=False)
+    SNR_WIN = db.Column(db.Float, nullable=False)
+
 
     DELTAX = db.Column(db.Float, nullable=False)
     DELTAY = db.Column(db.Float, nullable=False)
@@ -190,9 +203,19 @@ class SImages(db.Model):
 
     crossmatched = db.Column(db.Boolean, nullable=False)
 
-    refstarcount_zp = db.Column(db.Float, nullable=False)
-    refstarcount_slope = db.Column(db.Float, nullable=False)
-    refseeing_fwhm = db.Column(db.Float, nullable=False)
+    ref_starzp = db.Column(db.Float, nullable=False)
+    ref_starslope = db.Column(db.Float, nullable=False)
+    ref_fwhm = db.Column(db.Float, nullable=False)
+    new_fwhm = db.Column(db.Float, nullable=False)
+    m1_diam = db.Column(db.Float, nullable=False)
+    m2_diam = db.Column(db.Float, nullable=False)
+    l = db.Column(db.Float, nullable=False)
+    b = db.Column(db.Float, nullable=False)
+    eff_col = db.Column(db.Float, nullable=False)
+    px_scale = db.Column(db.Float, nullable=False)
+    ref_back_sbright = db.Column(db.Float, nullable=False)
+    new_back_sbright = db.Column(db.Float, nullable=False)
+
     exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
@@ -309,9 +332,19 @@ class SCorrImages(db.Model):
 
     crossmatched = db.Column(db.Boolean, nullable=False)
 
-    refstarcount_zp = db.Column(db.Float, nullable=False)
-    refstarcount_slope = db.Column(db.Float, nullable=False)
-    refseeing_fwhm = db.Column(db.Float, nullable=False)
+    ref_starzp = db.Column(db.Float, nullable=False)
+    ref_starslope = db.Column(db.Float, nullable=False)
+    ref_fwhm = db.Column(db.Float, nullable=False)
+    new_fwhm = db.Column(db.Float, nullable=False)
+    m1_diam = db.Column(db.Float, nullable=False)
+    m2_diam = db.Column(db.Float, nullable=False)
+    l = db.Column(db.Float, nullable=False)
+    b = db.Column(db.Float, nullable=False)
+    eff_col = db.Column(db.Float, nullable=False)
+    px_scale = db.Column(db.Float, nullable=False)
+    ref_back_sbright = db.Column(db.Float, nullable=False)
+    new_back_sbright = db.Column(db.Float, nullable=False)
+
     exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
@@ -396,6 +429,20 @@ class ImagesOIS(db.Model):
     path = db.Column(db.String(100), nullable=False)
 
     crossmatched = db.Column(db.Boolean, nullable=False)
+
+    ref_starzp = db.Column(db.Float, nullable=False)
+    ref_starslope = db.Column(db.Float, nullable=False)
+    ref_fwhm = db.Column(db.Float, nullable=False)
+    new_fwhm = db.Column(db.Float, nullable=False)
+    m1_diam = db.Column(db.Float, nullable=False)
+    m2_diam = db.Column(db.Float, nullable=False)
+    l = db.Column(db.Float, nullable=False)
+    b = db.Column(db.Float, nullable=False)
+    eff_col = db.Column(db.Float, nullable=False)
+    px_scale = db.Column(db.Float, nullable=False)
+    ref_back_sbright = db.Column(db.Float, nullable=False)
+    new_back_sbright = db.Column(db.Float, nullable=False)
+
     exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
@@ -447,6 +494,8 @@ class DetectedOIS(db.Model):
     ELONGATION = db.Column(db.Float, nullable=False)
     ELLIPTICITY = db.Column(db.Float, nullable=False)
     CLASS_STAR = db.Column(db.Float, nullable=False)
+    MU_THRESHOLD = db.Column(db.Float, nullable=False)
+    SNR_WIN = db.Column(db.Float, nullable=False)
 
     DELTAX = db.Column(db.Float, nullable=False)
     DELTAY = db.Column(db.Float, nullable=False)
@@ -521,6 +570,20 @@ class ImagesHOT(db.Model):
     path = db.Column(db.String(100), nullable=False)
 
     crossmatched = db.Column(db.Boolean, nullable=False)
+
+    ref_starzp = db.Column(db.Float, nullable=False)
+    ref_starslope = db.Column(db.Float, nullable=False)
+    ref_fwhm = db.Column(db.Float, nullable=False)
+    new_fwhm = db.Column(db.Float, nullable=False)
+    m1_diam = db.Column(db.Float, nullable=False)
+    m2_diam = db.Column(db.Float, nullable=False)
+    l = db.Column(db.Float, nullable=False)
+    b = db.Column(db.Float, nullable=False)
+    eff_col = db.Column(db.Float, nullable=False)
+    px_scale = db.Column(db.Float, nullable=False)
+    ref_back_sbright = db.Column(db.Float, nullable=False)
+    new_back_sbright = db.Column(db.Float, nullable=False)
+
     exec_time = db.Column(db.Float, nullable=False)
 
     def __repr__(self):
@@ -572,6 +635,8 @@ class DetectedHOT(db.Model):
     ELONGATION = db.Column(db.Float, nullable=False)
     ELLIPTICITY = db.Column(db.Float, nullable=False)
     CLASS_STAR = db.Column(db.Float, nullable=False)
+    MU_THRESHOLD = db.Column(db.Float, nullable=False)
+    SNR_WIN = db.Column(db.Float, nullable=False)
 
     DELTAX = db.Column(db.Float, nullable=False)
     DELTAY = db.Column(db.Float, nullable=False)

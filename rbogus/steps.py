@@ -50,6 +50,15 @@ class StepCrossMatch(run.Step):
     def process(self, batch_list):
 
         img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print 'no detections'
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
 
         for i in range(len(IDs)):
@@ -99,6 +108,15 @@ class StepSCrossMatch(run.Step):
     def process(self, batch_list):
 
         img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print 'no detections'
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
         IDs = u.matching(detect_to_cx, simul_to_cx, sep=True, radius=2.5)
 
         for i in range(len(IDs)):
@@ -148,6 +166,15 @@ class StepSCorrCrossMatch(run.Step):
     def process(self, batch_list):
 
         img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print 'no detections'
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.5)
 
         for i in range(len(IDs)):
@@ -197,6 +224,15 @@ class StepCrossMatchOIS(run.Step):
     def process(self, batch_list):
 
         img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print 'no detections'
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
 
         for i in range(len(IDs)):
@@ -246,6 +282,14 @@ class StepCrossMatchHOT(run.Step):
     def process(self, batch_list):
 
         img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print 'no detections'
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
 
         for i in range(len(IDs)):
