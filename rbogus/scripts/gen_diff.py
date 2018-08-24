@@ -30,14 +30,15 @@ from . import stuffskywrapper as w
 
 from corral.conf import settings
 
-def main(index=0, sim_cube={}):
+def main(params):
+#def main(index=0, sim_cube={}):
     # zp=6e4, slope=0.3, ref_fwhm=0.9):
-    suffix = 'img{}'.format(str(index).zfill(5))
+    #suffix = 'img{}'.format(str(index).zfill(5))
+    #curr_dir = os.path.join(settings.IMGS_PATH, suffix)
+    curr_dir = params['path']
 
-    curr_dir = os.path.join(settings.IMGS_PATH, suffix)
-    
     #Generation happens here
-    transients, times = sd.main(curr_dir, sim_cube)
+    transients, times = sd.main(params)
     print('succesful generation')
     #import ipdb; ipdb.set_trace()
     #zp, slope, ref_fwhm)

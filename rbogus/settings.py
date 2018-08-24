@@ -22,11 +22,15 @@ LOADER = "rbogus.load.Load"
 
 PIPELINE_SETUP = "rbogus.pipeline.RBogus"
 
-STEPS = ["rbogus.steps.StepCrossMatch",
-         "rbogus.steps.StepSCrossMatch",
-         "rbogus.steps.StepSCorrCrossMatch",
-         "rbogus.steps.StepCrossMatchOIS",
-         "rbogus.steps.StepCrossMatchHOT"]
+STEPS = [
+    "rbogus.steps.RunSimulations"
+    #~ "rbogus.steps.StepCrossMatch",
+    #~ "rbogus.steps.StepSCrossMatch",
+    #~ "rbogus.steps.StepSCorrCrossMatch",
+    #~ "rbogus.steps.StepCrossMatchOIS",
+    #~ "rbogus.steps.StepCrossMatchHOT"
+
+]
 
 ALERTS = []
 
@@ -34,6 +38,8 @@ ALERTS = []
 SHELL_LOCALS = {
     "np": np
 }
+
+PATH = os.path.abspath(os.path.dirname(__file__))
 
 try:
     from .local_settings import *  # noqa

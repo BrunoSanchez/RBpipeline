@@ -99,13 +99,31 @@ def run_sky(skyconf, stuff_cat='', img_path=None, t_exp=None):
     return img_path
 
 
+def write_sexconf(dest_file, sexconf_dict):
+    """Writes a sky configuration file using a template given in
+    'skyconf.j2', using jinja2 template rendering.
+
+    Everything is parsed by a dictionary with the desired values settled.
+    """
+    loader = jinja2.FileSystemLoader(os.path.abspath('.'))
+    jenv = jinja2.Environment(loader=loader,
+                              trim_blocks=True,
+                              lstrip_blocks=True)
+
+    template = jenv.get_template('rbogus/scripts/templates/conf.sex.j2')
+
+    with open(dest_file, 'w') as f1:
+        f1.write(template.render(sexconf_dict))
+    return
+
+
 def run_sex(sexconf, img_path=None, cat_output=None):
     print(os.path.abspath('.'))
     #import ipdb; ipdb.set_trace()
     if img_path is None:
         print('Provide an image path')
         return
-    
+
     else:
         cmd = "/home/bos0109/packages/sextractor/bin/sex {img_path} -c {conf} ".format(conf=sexconf,
                                                  img_path=img_path)

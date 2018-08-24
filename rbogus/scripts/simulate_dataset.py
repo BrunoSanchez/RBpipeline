@@ -39,43 +39,51 @@ from . import stuffskywrapper as w
 
 from corral.conf import settings
 
-def main(imgs_dir, sim_cube={}):
+def main(params):
+    imgs_dir = params['path']
+    conf_dir = os.path.join(imgs_dir, "conf")
+    if not os.path.isdir(conf_dir):
+        os.makedirs(conf_dir)
+    cats_dir = os.path.join(imgs_dir, "cats")
+    if not os.path.isdir(cats_dir):
+        os.makedirs(cats_dir)
+#def main(imgs_dir, sim_cube={}):
     # refstarcount_zp, refstarcount_slope, refseeing_fwhm):
 
     if not os.path.isdir(imgs_dir):
         os.makedirs(imgs_dir)
-    
+
     # generate stuff cat
-    stuffconf = {'cat_name' : os.path.join(settings.CATS_PATH, 'gxcat.list'),
+    stuffconf = {'cat_name' : os.path.join(cats_dir, 'gxcat.list'),
                  'im_w'     : 1024,
                  'im_h'     : 1024,
-                 'px_scale' : sim_cube['px_scale'],
-                 'eff_col'  : sim_cube['eff_col'],
-                 'l'        : sim_cube['l'],
-                 'b'        : sim_cube['b']
+                 'px_scale' : params['px_scale'],
+                 'eff_col'  : params['eff_col'],
+                 'l'        : params['l'],
+                 'b'        : params['b']
                  }
 
-    w.write_stuffconf(os.path.join(settings.CONFIG_PATH, 'conf.stuff'),
+    w.write_stuffconf(os.path.join(conf_dir, 'conf.stuff'),
                       stuffconf)
     cat_name = stuffconf['cat_name']
-    w.run_stuff(os.path.join(settings.CONFIG_PATH, 'conf.stuff'))
+    w.run_stuff(os.path.join(conf_dir, 'conf.stuff'))
 
     # generate the Reference image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
                'exp_time'   : 600,
                'mag_zp'     : 25.,
-               'px_scale'   : sim_cube['px_scale'],
-               'seeing_fwhm': sim_cube['ref_fwhm'],
-               'starcount_zp': sim_cube['ref_starzp'],
-               'starcount_slope': sim_cube['ref_starslope'],
-               'm1_diam'    : sim_cube['m1_diam'],
-               'm2_diam'    : sim_cube['m2_diam'],
-               'back_sbright' : sim_cube['ref_back_sbright']
+               'px_scale'   : params['px_scale'],
+               'seeing_fwhm': params['ref_fwhm'],
+               'starcount_zp': params['ref_starzp'],
+               'starcount_slope': params['ref_starslope'],
+               'm1_diam'    : params['m1_diam'],
+               'm2_diam'    : params['m2_diam'],
+               'back_sbright' : params['ref_back_sbright']
                }
 
-    w.write_skyconf(os.path.join(settings.CONFIG_PATH, 'conf.sky'), skyconf)
-    ref = w.run_sky(os.path.join(settings.CONFIG_PATH, 'conf.sky'), cat_name,
+    w.write_skyconf(os.path.join(conf_dir, 'conf.sky'), skyconf)
+    ref = w.run_sky(os.path.join(conf_dir, 'conf.sky'), cat_name,
                     img_path=os.path.join(imgs_dir, 'ref.fits'))
 
     # add some transients over the galaxies
@@ -104,31 +112,31 @@ def main(imgs_dir, sim_cube={}):
     newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
                                      'r_scales', 'gx_mag'])
     cat_cols = ['code', 'x', 'y', 'app_mag']
-    newcat[cat_cols].write(os.path.join(settings.CATS_PATH, 'transient.list'),
+    newcat[cat_cols].write(os.path.join(cats_dir, 'transient.list'),
                            format='ascii.fast_no_header',
                            overwrite=True)
 
     os.system('cat '+os.path.join(imgs_dir, 'ref.list')+' >> '+
-               os.path.join(settings.CATS_PATH, 'transient.list'))
+               os.path.join(cats_dir, 'transient.list'))
 
     # generate the new image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
                'exp_time'   : 600,
                'mag_zp'     : 25.0,
-               'px_scale'   : sim_cube['px_scale'],
-               'seeing_fwhm': sim_cube['new_fwhm'],
+               'px_scale'   : params['px_scale'],
+               'seeing_fwhm': params['new_fwhm'],
                'starcount_zp': 3e-4,
                'starcount_slope': 0.2,
-               'm1_diam'    : sim_cube['m1_diam'],
-               'm2_diam'    : sim_cube['m2_diam'],
-               'back_sbright' : sim_cube['new_back_sbright']
+               'm1_diam'    : params['m1_diam'],
+               'm2_diam'    : params['m2_diam'],
+               'back_sbright' : params['new_back_sbright']
                }
 
-    cat_name = os.path.join(settings.CATS_PATH, 'transient.list')
-    w.write_skyconf(os.path.join(settings.CONFIG_PATH, 'conf.sky'), skyconf)
+    cat_name = os.path.join(cats_dir, 'transient.list')
+    w.write_skyconf(os.path.join(conf_dir, 'conf.sky'), skyconf)
 
-    new = w.run_sky(os.path.join(settings.CONFIG_PATH, 'conf.sky'), cat_name,
+    new = w.run_sky(os.path.join(conf_dir, 'conf.sky'), cat_name,
                     img_path=os.path.join(imgs_dir, 'new.fits'))
 
     print('Images to be subtracted: {} {}'.format(ref, new))
@@ -138,7 +146,9 @@ def main(imgs_dir, sim_cube={}):
     #    D, P, S = sub.subtract()
     import time
     t0 = time.time()
-    D, P, S, mask = ps.diff(ref, new, align=False, beta=False, iterative=False, shift=False)
+    import ipdb; ipdb.set_trace()
+    D, P, S, mask = ps.diff(str(ref), str(new), align=False, beta=False,
+                            iterative=False, shift=False)
     dt_z = time.time() - t0
 
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
@@ -151,7 +161,7 @@ def main(imgs_dir, sim_cube={}):
     ascii.write(table=np.asarray(scorrdetected),
                 output=os.path.join(imgs_dir, 's_corr_detected.csv'),
                 names=['X_IMAGE', 'Y_IMAGE', 'SIGNIFICANCE'],
-                #format='csv', 
+                #format='csv',
                 overwrite=True)
 
     S = np.ascontiguousarray(S)
@@ -163,7 +173,7 @@ def main(imgs_dir, sim_cube={}):
     print('S_corr with sep found thath {} transients were above 3.5 sigmas'.format(len(sdetected)))
     ascii.write(table=sdetected,
                 output=os.path.join(imgs_dir, 'sdetected.csv'),
-                #format='csv', 
+                #format='csv',
                 overwrite=True)
 
 ##  With OIS
