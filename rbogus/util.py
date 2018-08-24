@@ -6,6 +6,7 @@
 rbogus data handling routines.
 """
 import numpy as np
+from six.moves import range
 from astroML import crossmatch as cx
 
 
@@ -54,7 +55,7 @@ def matching(detected, simulated, radius=1., masked=False, sep=False):
     IDs = np.zeros_like(ind_) - 13133
     # IDs has length = len(imXY) = len(simulated)
 
-    for i in xrange(len(ind_)):
+    for i in range(len(ind_)):
         if dist_[i] != np.inf:
             dist_o = dist_[i]
             ind_o = ind_[i]

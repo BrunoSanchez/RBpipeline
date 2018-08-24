@@ -1,12 +1,12 @@
 """Local settings for rbpipeline"""
 
-#IMGS_PATH = '/home/bruno/Data/NewRBpipeline/images'
-#CONFIG_PATH = '/home/bruno/Data/NewRBpipeline/config'
-#CATS_PATH = '/home/bruno/Data/NewRBpipeline/cats'
+IMGS_PATH = '/home/bruno/Data/NewRBpipeline/images'
+CONFIG_PATH = '/home/bruno/Data/NewRBpipeline/config'
+CATS_PATH = '/home/bruno/Data/NewRBpipeline/cats'
 
-IMGS_PATH = '/mnt/is0/bos0109/data_sim_O2/images'
-CONFIG_PATH = '/mnt/is0/bos0109/data_sim_O2/config'
-CATS_PATH = '/mnt/is0/bos0109/data_sim_O2/cats'
+#IMGS_PATH = '/mnt/is0/bos0109/data_sim_O2/images'
+#CONFIG_PATH = '/mnt/is0/bos0109/data_sim_O2/config'
+#CATS_PATH = '/mnt/is0/bos0109/data_sim_O2/cats'
 
 
 import os
