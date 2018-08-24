@@ -30,12 +30,26 @@ from . import stuffskywrapper as w
 
 from corral.conf import settings
 
+import pickle
+
 def main(params):
 #def main(index=0, sim_cube={}):
     # zp=6e4, slope=0.3, ref_fwhm=0.9):
     #suffix = 'img{}'.format(str(index).zfill(5))
     #curr_dir = os.path.join(settings.IMGS_PATH, suffix)
     curr_dir = params['path']
+
+    conf_dir = os.path.join(curr_dir, "conf")
+    if not os.path.isdir(conf_dir):
+        os.makedirs(conf_dir)
+    cats_dir = os.path.join(curr_dir, "cats")
+    if not os.path.isdir(cats_dir):
+        os.makedirs(cats_dir)
+    results_dir = os.path.join(curr_dir, "results")
+    if not os.path.isdir(results_dir):
+        os.makedirs(results_dir)
+
+
 
     #Generation happens here
     transients, times = sd.main(params)
@@ -44,21 +58,21 @@ def main(params):
     #zp, slope, ref_fwhm)
     #
     diff_path = os.path.join(curr_dir, 'diff.fits')
-    cat_out = os.path.join(settings.CATS_PATH, 'outcat.dat')
+    cat_out = os.path.join(cats_dir, 'outcat.dat')
 
-    w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
+    w.run_sex(os.path.join(curr_dir, '../../config/conf.sex'),
               diff_path, cat_output=cat_out)
     #
     diff_ois_path = os.path.join(curr_dir, 'diff_ois.fits')
-    cat_ois_out = os.path.join(settings.CATS_PATH, 'outcat_ois.dat')
+    cat_ois_out = os.path.join(cats_dir, 'outcat_ois.dat')
 
-    w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
+    w.run_sex(os.path.join(curr_dir, '../../config/conf.sex'),
               diff_ois_path, cat_output=cat_ois_out)
     #
     diff_hot_path = os.path.join(curr_dir, 'diff_hot.fits')
-    cat_hot_out = os.path.join(settings.CATS_PATH, 'outcat_hot.dat')
+    cat_hot_out = os.path.join(cats_dir, 'outcat_hot.dat')
 
-    w.run_sex(os.path.join(settings.CONFIG_PATH, 'conf.sex'),
+    w.run_sex(os.path.join(curr_dir, '../../config/conf.sex'),
               diff_hot_path, cat_output=cat_hot_out)
 
 # =============================================================================
@@ -155,8 +169,13 @@ def main(params):
     detections_hot['PEAK_CENTROID'] = pk_cent
     detections_hot['id'] = np.repeat(None, len(deltax))
 
-    return [diff_path, detections,
-            diff_ois_path, detections_ois,
-            diff_hot_path, detections_hot,
-            transients, sdetections, scorrdetections, times]
+
+    detections.to_pickle(os.path.join(results_dir, 'detections.pkl'))
+    detections_ois.to_pickle(os.path.join(results_dir, 'detections_ois.pkl'))
+    detections_hot.to_pickle(os.path.join(results_dir, 'detections_hot.pkl'))
+    transients.to_pickle(os.path.join(results_dir, 'transients.pkl'))
+    sdetections.to_pickle(os.path.join(results_dir, 'sdetections.pkl'))
+    scorrdetections.to_pickle(os.path.join(results_dir, 'scorrdetections.pkl'))
+    with open(os.path.join(results_dir, 'times.pkl'), 'w') as fp:
+        pickle.dump(times, fp)
 

@@ -146,7 +146,6 @@ def main(params):
     #    D, P, S = sub.subtract()
     import time
     t0 = time.time()
-    import ipdb; ipdb.set_trace()
     D, P, S, mask = ps.diff(str(ref), str(new), align=False, beta=False,
                             iterative=False, shift=False)
     dt_z = time.time() - t0

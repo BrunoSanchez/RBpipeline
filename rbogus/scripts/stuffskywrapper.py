@@ -125,8 +125,10 @@ def run_sex(sexconf, img_path=None, cat_output=None):
         return
 
     else:
-        cmd = "/home/bos0109/packages/sextractor/bin/sex {img_path} -c {conf} ".format(conf=sexconf,
+        cmd = "sextractor {img_path} -c {conf} ".format(conf=sexconf,
                                                  img_path=img_path)
+        #cmd = "/home/bos0109/packages/sextractor/bin/sex {img_path} -c {conf} ".format(conf=sexconf,
+        #                                         img_path=img_path)
     if cat_output is not None:
         cmd = cmd + " -CATALOG_NAME {}".format(cat_output)
 
