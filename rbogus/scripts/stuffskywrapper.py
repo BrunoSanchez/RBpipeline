@@ -34,7 +34,7 @@ import subprocess
 
 import jinja2
 import numpy as np
-from astropy.io import ascii
+#from astropy.io import ascii
 
 def write_stuffconf(dest_file, stuffconf_dict):
     """Writes a stuff configuration file using a template given in
@@ -100,19 +100,20 @@ def run_sky(skyconf, stuff_cat='', img_path=None, t_exp=None):
 
 
 def run_sex(sexconf, img_path=None, cat_output=None):
-    print os.path.abspath('.')
+    print(os.path.abspath('.'))
+    #import ipdb; ipdb.set_trace()
     if img_path is None:
-        print 'Provide an image path'
+        print('Provide an image path')
         return
-
+    
     else:
-        cmd = "sextractor {img_path} -c {conf} ".format(conf=sexconf,
+        cmd = "/home/bos0109/packages/sextractor/bin/sex {img_path} -c {conf} ".format(conf=sexconf,
                                                  img_path=img_path)
     if cat_output is not None:
         cmd = cmd + " -CATALOG_NAME {}".format(cat_output)
 
     cmd = shlex.split(cmd)
-
+    print(cmd)
     subprocess.call(cmd)
     return cat_output
 

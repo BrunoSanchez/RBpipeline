@@ -51,7 +51,7 @@ class StepCrossMatch(run.Step):
 
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
-            print 'no detections'
+            print('no detections')
             for asim in simul_to_cx:
                 und = models.Undetected()
                 und.simulated = asim
@@ -109,7 +109,7 @@ class StepSCrossMatch(run.Step):
 
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
-            print 'no detections'
+            print('no detections')
             for asim in simul_to_cx:
                 und = models.Undetected()
                 und.simulated = asim
@@ -167,7 +167,7 @@ class StepSCorrCrossMatch(run.Step):
 
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
-            print 'no detections'
+            print('no detections')
             for asim in simul_to_cx:
                 und = models.Undetected()
                 und.simulated = asim
@@ -225,7 +225,7 @@ class StepCrossMatchOIS(run.Step):
 
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
-            print 'no detections'
+            print('no detections')
             for asim in simul_to_cx:
                 und = models.Undetected()
                 und.simulated = asim
@@ -283,7 +283,7 @@ class StepCrossMatchHOT(run.Step):
 
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
-            print 'no detections'
+            print('no detections')
             for asim in simul_to_cx:
                 und = models.Undetected()
                 und.simulated = asim

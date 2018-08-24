@@ -25,8 +25,8 @@
 import os
 import numpy as np
 from astropy.io import ascii
-import simulate_dataset as sd
-import stuffskywrapper as w
+from . import simulate_dataset as sd
+from . import stuffskywrapper as w
 
 from corral.conf import settings
 
@@ -35,9 +35,11 @@ def main(index=0, sim_cube={}):
     suffix = 'img{}'.format(str(index).zfill(5))
 
     curr_dir = os.path.join(settings.IMGS_PATH, suffix)
-
+    
     #Generation happens here
     transients, times = sd.main(curr_dir, sim_cube)
+    print('succesful generation')
+    #import ipdb; ipdb.set_trace()
     #zp, slope, ref_fwhm)
     #
     diff_path = os.path.join(curr_dir, 'diff.fits')

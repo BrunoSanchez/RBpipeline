@@ -19,7 +19,7 @@
 
 from corral import run
 from . import models
-from scripts import gen_diff
+from .scripts import gen_diff
 from corral.conf import settings as stgs
 
 # =============================================================================
@@ -52,8 +52,8 @@ class Load(run.Loader):
         # self.session.buff = []
 
     def generate(self):
-        print 'current index {}'.format(self.current_index)
-        print 'current params', self.current_params
+        print('current index {}'.format(self.current_index))
+        print('current params', self.current_params)
         results = gen_diff.main(self.current_index, self.current_params)
 
         diff_path      = results[0]

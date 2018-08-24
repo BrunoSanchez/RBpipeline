@@ -35,7 +35,7 @@ from properimage import single_image as si
 from properimage import propersubtract as ps
 from properimage import utils
 
-import stuffskywrapper as w
+from . import stuffskywrapper as w
 
 from corral.conf import settings
 
@@ -44,7 +44,7 @@ def main(imgs_dir, sim_cube={}):
 
     if not os.path.isdir(imgs_dir):
         os.makedirs(imgs_dir)
-
+    
     # generate stuff cat
     stuffconf = {'cat_name' : os.path.join(settings.CATS_PATH, 'gxcat.list'),
                  'im_w'     : 1024,
@@ -131,7 +131,7 @@ def main(imgs_dir, sim_cube={}):
     new = w.run_sky(os.path.join(settings.CONFIG_PATH, 'conf.sky'), cat_name,
                     img_path=os.path.join(imgs_dir, 'new.fits'))
 
-    print 'Images to be subtracted: {} {}'.format(ref, new)
+    print('Images to be subtracted: {} {}'.format(ref, new))
 
 ##  With properimage
     #with ps.ImageSubtractor(ref, new, align=False, solve_beta=False) as sub:
@@ -145,12 +145,14 @@ def main(imgs_dir, sim_cube={}):
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
     utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))
 
+    # import ipdb; ipdb.set_trace()
     scorrdetected = utils.find_S_local_maxima(S, threshold=3.5)
-    print 'S_corr found thath {} transients were above 3.5 sigmas'.format(len(scorrdetected))
+    print('S_corr found thath {} transients were above 3.5 sigmas'.format(len(scorrdetected)))
     ascii.write(table=np.asarray(scorrdetected),
                 output=os.path.join(imgs_dir, 's_corr_detected.csv'),
                 names=['X_IMAGE', 'Y_IMAGE', 'SIGNIFICANCE'],
-                format='csv')
+                #format='csv', 
+                overwrite=True)
 
     S = np.ascontiguousarray(S)
     #~ s_bkg = sep.Background(S)
@@ -158,10 +160,11 @@ def main(imgs_dir, sim_cube={}):
     mean, median, std = sigma_clipped_stats(S)
     sdetected = sep.extract(S-median, 3.5*std,
                             filter_kernel=None)
-    print 'S_corr with sep found thath {} transients were above 3.5 sigmas'.format(len(sdetected))
+    print('S_corr with sep found thath {} transients were above 3.5 sigmas'.format(len(sdetected)))
     ascii.write(table=sdetected,
                 output=os.path.join(imgs_dir, 'sdetected.csv'),
-                format='csv')
+                #format='csv', 
+                overwrite=True)
 
 ##  With OIS
     t0 = time.time()

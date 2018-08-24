@@ -12,13 +12,13 @@ CATS_PATH = '/mnt/is0/bos0109/data_sim_O2/cats'
 import os
 
 if os.path.isfile('sim_cube.pkl'):
-    print 'reading cube'
+    print('reading cube')
     SIM_CUBE = os.path.abspath('sim_cube.pkl')
     #with open('sim_cube.pkl', 'rb') as fp:
     #    SIM_CUBE = ujson.load(fp)
 
 else:
-    print 'generating cube'
+    print('generating cube')
     SIM_CUBE = []
 
     for ref_starzp in [4e3, 8e3, 16e3, 32e3, 64e3]:
@@ -32,7 +32,6 @@ else:
                                     for b in [10, 30, 60]:
                                         for ref_back_sbright in [20., 21., 22.]:
                                             for new_back_sbright in [20, 19., 18]:
-
                                                 confs = {
                                                  'ref_starzp': ref_starzp,
                                                  'ref_starslope': ref_starslope,
@@ -48,6 +47,7 @@ else:
                                                  'new_back_sbright' : new_back_sbright
                                                  }
                                                 SIM_CUBE.append(confs)
+    #import ipdb; ipdb.set_trace()
     import ujson
     with open('sim_cube.pkl', 'wb') as fp:
         ujson.dump(SIM_CUBE, fp)

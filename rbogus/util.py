@@ -36,11 +36,11 @@ def matching(detected, simulated, radius=1., masked=False, sep=False):
         match = ~np.isinf(dist)
         match_ = ~np.isinf(dist_)
     except ValueError:
-        print "masterXY.shape"
-        print masterXY.shape
-        print "\n\nimXY.shape"
-        print imXY.shape
-        print "\n"
+        print("masterXY.shape")
+        print(masterXY.shape)
+        print("\n\nimXY.shape")
+        print(imXY.shape)
+        print("\n")
         try:
             dist, ind = cx.crossmatch(masterXY, imXY, max_distance=radius*3)
             dist_, ind_ = cx.crossmatch(imXY, masterXY, max_distance=radius*3)
@@ -48,7 +48,7 @@ def matching(detected, simulated, radius=1., masked=False, sep=False):
             match_ = ~np.isinf(dist_)
         except:
             # import ipdb; ipdb.set_trace()
-            print 'There were cross match exceptions'
+            print('There were cross match exceptions')
             return np.zeros_like(imXY) - 13
 
     IDs = np.zeros_like(ind_) - 13133
@@ -67,7 +67,7 @@ def matching(detected, simulated, radius=1., masked=False, sep=False):
                     IDs[i] = master_idx[ind_o]
     #                print master_idx[ind_o], ind_o
 
-    print len(IDs), len(ind_), len(ind)
+    print(len(IDs), len(ind_), len(ind))
     if masked:
         mask = IDs > 0
         return(IDs, mask)
