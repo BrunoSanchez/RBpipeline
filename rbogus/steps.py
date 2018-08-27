@@ -34,7 +34,7 @@ class RunSimulations(run.Step):
     def generate(self):
         sims = list(self.session.query(models.Simulation).filter_by(executed=False))
         sims = np.array(sims)
-        size = int(len(sims) / 5) or 1
+        size = int(len(sims) / 2) or 1
         for chunk in np.array_split(sims, size):
             yield chunk
             break
@@ -49,10 +49,14 @@ class RunSimulations(run.Step):
 
     def process(self, batch_list):
         bp = map(self.as_dict, batch_list)
-        with Parallel(n_jobs=4) as jobs:
+        #gen_diff.main(bp[0])
+
+        with Parallel(n_jobs=2) as jobs:
             jobs(
                 delayed(gen_diff.main)(params)
                 for params in bp)
+        #for a_sim in batch_list:
+        #    a_sim.executed = True
 
         #~ for a_sim in batch_list:
             #~ params = self.as_dict(a_sim)

@@ -170,12 +170,18 @@ def main(params):
     detections_hot['id'] = np.repeat(None, len(deltax))
 
 
-    detections.to_pickle(os.path.join(results_dir, 'detections.pkl'))
-    detections_ois.to_pickle(os.path.join(results_dir, 'detections_ois.pkl'))
-    detections_hot.to_pickle(os.path.join(results_dir, 'detections_hot.pkl'))
-    transients.to_pickle(os.path.join(results_dir, 'transients.pkl'))
-    sdetections.to_pickle(os.path.join(results_dir, 'sdetections.pkl'))
-    scorrdetections.to_pickle(os.path.join(results_dir, 'scorrdetections.pkl'))
+    detections.to_pickle(os.path.join(results_dir, 'detections.pkl'),
+    protocol=2)
+    detections_ois.to_pickle(os.path.join(results_dir, 'detections_ois.pkl'),
+    protocol=2)
+    detections_hot.to_pickle(os.path.join(results_dir, 'detections_hot.pkl'),
+    protocol=2)
+    transients.to_pickle(os.path.join(results_dir, 'transients.pkl'),
+    protocol=2)
+    sdetections.to_pickle(os.path.join(results_dir, 'sdetections.pkl'),
+    protocol=2)
+    scorrdetections.to_pickle(os.path.join(results_dir,
+    'scorrdetections.pkl'), protocol=2)
     with open(os.path.join(results_dir, 'times.pkl'), 'w') as fp:
-        pickle.dump(times, fp)
+        pickle.dump(times, fp, protocol=2)
 

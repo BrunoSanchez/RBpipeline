@@ -177,7 +177,11 @@ def main(params):
 
 ##  With OIS
     t0 = time.time()
-    ois_d = ois.optimal_system(fits.getdata(new), fits.getdata(ref))[0]
+    n = fits.getdata(new)
+    r = fits.getdata(ref)
+    ois_d = ois.optimal_system(n, r, method='Bramich', background=None)[0]
+    del(n)
+    del(r)
     dt_o = time.time() - t0
     utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
 
