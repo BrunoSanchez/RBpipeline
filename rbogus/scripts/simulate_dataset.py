@@ -179,7 +179,7 @@ def main(params):
     t0 = time.time()
     n = fits.getdata(new)
     r = fits.getdata(ref)
-    ois_d = ois.optimal_system(n, r, method='Bramich', background=None)[0]
+    ois_d = ois.optimal_system(n, r, method='Bramich')[0]
     del(n)
     del(r)
     dt_o = time.time() - t0
