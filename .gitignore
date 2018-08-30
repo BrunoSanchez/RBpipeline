@@ -75,3 +75,7 @@ rbogus/local_settings*
 *.FIT
 *.fits
 *.FITS
+
+# properimage files
+._*.dat
+._*.map

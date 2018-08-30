@@ -170,18 +170,32 @@ def main(params):
     detections_hot['id'] = np.repeat(None, len(deltax))
 
 
-    detections.to_pickle(os.path.join(results_dir, 'detections.pkl'),
-    protocol=2)
-    detections_ois.to_pickle(os.path.join(results_dir, 'detections_ois.pkl'),
-    protocol=2)
-    detections_hot.to_pickle(os.path.join(results_dir, 'detections_hot.pkl'),
-    protocol=2)
-    transients.to_pickle(os.path.join(results_dir, 'transients.pkl'),
-    protocol=2)
-    sdetections.to_pickle(os.path.join(results_dir, 'sdetections.pkl'),
-    protocol=2)
-    scorrdetections.to_pickle(os.path.join(results_dir,
-    'scorrdetections.pkl'), protocol=2)
-    with open(os.path.join(results_dir, 'times.pkl'), 'w') as fp:
-        pickle.dump(times, fp, protocol=2)
+    #~ detections.to_pickle(os.path.join(results_dir, 'detections.pkl'),
+    #~ protocol=2)
+    #~ detections_ois.to_pickle(os.path.join(results_dir, 'detections_ois.pkl'),
+    #~ protocol=2)
+    #~ detections_hot.to_pickle(os.path.join(results_dir, 'detections_hot.pkl'),
+    #~ protocol=2)
+    #~ transients.to_pickle(os.path.join(results_dir, 'transients.pkl'),
+    #~ protocol=2)
+    #~ sdetections.to_pickle(os.path.join(results_dir, 'sdetections.pkl'),
+    #~ protocol=2)
+    #~ scorrdetections.to_pickle(os.path.join(results_dir,
+    #~ 'scorrdetections.pkl'), protocol=2)
+    #~ with open(os.path.join(results_dir, 'times.pkl'), 'w') as fp:
+        #~ pickle.dump(times, fp, protocol=2)
+    results = []
+
+    results.append(diff_path)
+    results.append(detections)
+    results.append(diff_ois_path)
+    results.append(detections_ois)
+    results.append(diff_hot_path)
+    results.append(detections_hot)
+    results.append(transients)
+    results.append(detections)
+    results.append(scorrdetections)
+    results.append(times)
+
+    return results
 

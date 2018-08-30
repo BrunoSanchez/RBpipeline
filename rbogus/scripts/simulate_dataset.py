@@ -58,9 +58,7 @@ def main(params):
                  'im_w'     : 1024,
                  'im_h'     : 1024,
                  'px_scale' : params['px_scale'],
-                 'eff_col'  : params['eff_col'],
-                 'l'        : params['l'],
-                 'b'        : params['b']
+                 'eff_col'  : params['eff_col']
                  }
 
     w.write_stuffconf(os.path.join(conf_dir, 'conf.stuff'),
