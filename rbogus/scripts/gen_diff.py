@@ -33,6 +33,7 @@ from corral.conf import settings
 import pickle
 
 def main(params):
+    import ipdb; ipdb.set_trace()
 #def main(index=0, sim_cube={}):
     # zp=6e4, slope=0.3, ref_fwhm=0.9):
     #suffix = 'img{}'.format(str(index).zfill(5))
