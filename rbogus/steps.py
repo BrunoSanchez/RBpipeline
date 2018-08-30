@@ -99,6 +99,8 @@ class RunSimulations(run.Step):
             self.session.commit()
 
             sdetections['image_id'] = np.repeat(simage.id, len(sdetections))
+            sdetections['xmin_col'] = sdetections['xmin']
+            sdetections.drop(['xmin'], axis=1)
             sdetections.to_sql('SDetected', self.session.get_bind(),
                                 if_exists='append', index=False)
 
