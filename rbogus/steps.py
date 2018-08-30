@@ -100,7 +100,8 @@ class RunSimulations(run.Step):
 
             sdetections['image_id'] = np.repeat(simage.id, len(sdetections))
             sdetections['xmin_col'] = sdetections['xmin']
-            sdetections.drop(['xmin'], axis=1)
+            sdetections['xmax_col'] = sdetections['xmax']
+            sdetections.drop(['xmin', 'xmax'], axis=1)
             sdetections.to_sql('SDetected', self.session.get_bind(),
                                 if_exists='append', index=False)
 

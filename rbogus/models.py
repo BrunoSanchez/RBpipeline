@@ -288,7 +288,7 @@ class SDetected(db.Model):
     npix = db.Column(db.Float, nullable=False)
     tnpix = db.Column(db.Float, nullable=False)
     xmin_col = db.Column(db.Float, nullable=False)
-    xmax = db.Column(db.Float, nullable=False)
+    xmax_col = db.Column(db.Float, nullable=False)
     ymin = db.Column(db.Float, nullable=False)
     ymax = db.Column(db.Float, nullable=False)
     x = db.Column(db.Float, nullable=False)
