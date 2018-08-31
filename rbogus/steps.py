@@ -34,7 +34,7 @@ class RunSimulations(run.Step):
     def generate(self):
         sims = list(self.session.query(models.Simulation).filter_by(executed=False))
         sims = np.array(sims)
-        size = int(len(sims) /2) or 1
+        size = int(len(sims) / 16) or 1
         for chunk in np.array_split(sims, size):
             yield chunk
             break
@@ -52,7 +52,7 @@ class RunSimulations(run.Step):
 
         #~ self.gen_and_load(bp[0])
 
-        with Parallel(n_jobs=2) as jobs:
+        with Parallel(n_jobs=4) as jobs:
             batch_res = jobs(
                 delayed(gen_diff.main)(params)
                 for params in bp)
@@ -86,7 +86,7 @@ class RunSimulations(run.Step):
 
             self.session.add(image)
             self.session.commit()
-            import ipdb; ipdb.set_trace()
+
             detections['image_id'] = np.repeat(image.id, len(detections))
             detections.to_sql('Detected', self.session.get_bind(),
                                if_exists='append', index=False)
