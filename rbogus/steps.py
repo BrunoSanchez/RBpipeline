@@ -63,6 +63,7 @@ class RunSimulations(run.Step):
                 asim.executed = True
                 asim.failed_to_subtract = True
                 asim.possible_saturation = True
+                continue
 
             diff_path      = results[0]
             detections     = results[1]
