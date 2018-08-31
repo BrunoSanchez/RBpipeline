@@ -86,7 +86,7 @@ class RunSimulations(run.Step):
 
             self.session.add(image)
             self.session.commit()
-
+            import ipdb; ipdb.set_trace()
             detections['image_id'] = np.repeat(image.id, len(detections))
             detections.to_sql('Detected', self.session.get_bind(),
                                if_exists='append', index=False)
