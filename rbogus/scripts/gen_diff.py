@@ -193,7 +193,7 @@ def main(params):
     results.append(diff_hot_path)
     results.append(detections_hot)
     results.append(transients)
-    results.append(detections)
+    results.append(sdetections)
     results.append(scorrdetections)
     results.append(times)
 

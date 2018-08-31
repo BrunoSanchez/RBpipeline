@@ -52,7 +52,7 @@ class RunSimulations(run.Step):
 
         #~ self.gen_and_load(bp[0])
 
-        with Parallel(n_jobs=1) as jobs:
+        with Parallel(n_jobs=2) as jobs:
             batch_res = jobs(
                 delayed(gen_diff.main)(params)
                 for params in bp)
@@ -98,10 +98,11 @@ class RunSimulations(run.Step):
             self.session.add(simage)
             self.session.commit()
 
+            #import ipdb; ipdb.set_trace()
             sdetections['image_id'] = np.repeat(simage.id, len(sdetections))
             sdetections['xmin_col'] = sdetections['xmin']
             sdetections['xmax_col'] = sdetections['xmax']
-            sdetections.drop(['xmin', 'xmax'], axis=1)
+            sdetections.drop(['xmin', 'xmax'], axis=1, inplace=True)
             sdetections.to_sql('SDetected', self.session.get_bind(),
                                 if_exists='append', index=False)
 
