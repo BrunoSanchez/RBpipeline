@@ -59,6 +59,11 @@ class RunSimulations(run.Step):
 
         for results, params, asim in zip(batch_res, bp, batch_list):
 
+            if results == 'error101':
+                asim.executed = True
+                asim.failed_to_subtract = True
+                asim.possible_saturation = True
+
             diff_path      = results[0]
             detections     = results[1]
             diff_ois_path  = results[2]
@@ -165,8 +170,9 @@ class RunSimulations(run.Step):
             transients.to_sql('Simulated', self.session.get_bind(),
                               if_exists='append', index=False)
 
-        for a_sim in batch_list:
-            a_sim.executed = True
+            asim.executed = True
+            asim.failed_to_subtract = False
+            asim.possible_saturation = False
 
 
 

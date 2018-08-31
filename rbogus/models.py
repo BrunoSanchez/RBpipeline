@@ -21,6 +21,8 @@ class Simulation(db.Model):
     executed = db.Column(db.Boolean, default=False)
     loaded = db.Column(db.Boolean, default=False)
     crossmatched = db.Column(db.Boolean, default=False)
+    failed_to_subtract = db.Column(db.Boolean, default=False)
+    possible_saturation = db.Column(db.Boolean, default=False)
     #n_samples = db.Column(db.Integer, nullable=True)
 
     ref_starzp = db.Column(db.Float, nullable=False)

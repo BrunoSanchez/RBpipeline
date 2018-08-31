@@ -144,8 +144,11 @@ def main(params):
     #    D, P, S = sub.subtract()
     import time
     t0 = time.time()
-    D, P, S, mask = ps.diff(str(ref), str(new), align=False, beta=False,
-                            iterative=False, shift=False)
+    try:
+        D, P, S, mask = ps.diff(str(ref), str(new), align=False, beta=False,
+                                iterative=False, shift=False)
+    except ValueError:
+        raise
     dt_z = time.time() - t0
 
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))

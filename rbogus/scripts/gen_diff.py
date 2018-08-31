@@ -52,8 +52,12 @@ def main(params):
 
 
     #Generation happens here
-    transients, times = sd.main(params)
-    print('succesful generation')
+    try:
+        transients, times = sd.main(params)
+        print('succesful generation')
+    except:
+        return('error101')
+
     #import ipdb; ipdb.set_trace()
     #zp, slope, ref_fwhm)
     #
