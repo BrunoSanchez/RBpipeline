@@ -83,7 +83,7 @@ def main(params):
 # SCorr Detections
 # =============================================================================
     scorrdetections = ascii.read(os.path.join(curr_dir, 's_corr_detected.csv')).to_pandas()
-    scorrdetections['id'] = np.repeat(None, len(scorrdetections))
+    #scorrdetections['id'] = np.repeat(None, len(scorrdetections))
 
 # =============================================================================
 # S Detections
@@ -105,7 +105,7 @@ def main(params):
     sdetections['RATIO'] = ratio
     sdetections['ROUNDNESS'] = roundness
     sdetections['PEAK_CENTROID'] = pk_cent
-    sdetections['id'] = np.repeat(None, len(deltax))
+    #sdetections['id'] = np.repeat(None, len(deltax))
 
 # =============================================================================
 #  PS detections
@@ -127,7 +127,7 @@ def main(params):
     detections['RATIO'] = ratio
     detections['ROUNDNESS'] = roundness
     detections['PEAK_CENTROID'] = pk_cent
-    detections['id'] = np.repeat(None, len(deltax))
+    #detections['id'] = np.repeat(None, len(deltax))
 
 # =============================================================================
 #   OIS detections
@@ -149,7 +149,7 @@ def main(params):
     detections_ois['RATIO'] = ratio
     detections_ois['ROUNDNESS'] = roundness
     detections_ois['PEAK_CENTROID'] = pk_cent
-    detections_ois['id'] = np.repeat(None, len(deltax))
+    #detections_ois['id'] = np.repeat(None, len(deltax))
 
 # =============================================================================
 #   HOT detections
@@ -171,7 +171,7 @@ def main(params):
     detections_hot['RATIO'] = ratio
     detections_hot['ROUNDNESS'] = roundness
     detections_hot['PEAK_CENTROID'] = pk_cent
-    detections_hot['id'] = np.repeat(None, len(deltax))
+    #detections_hot['id'] = np.repeat(None, len(deltax))
 
 
     #~ detections.to_pickle(os.path.join(results_dir, 'detections.pkl'),
