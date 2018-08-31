@@ -69,7 +69,7 @@ def main(params):
     # generate the Reference image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
-               'exp_time'   : 600,
+               'exp_time'   : params['exp_time'],
                'mag_zp'     : 25.,
                'px_scale'   : params['px_scale'],
                'seeing_fwhm': params['ref_fwhm'],
@@ -120,7 +120,7 @@ def main(params):
     # generate the new image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
-               'exp_time'   : 600,
+               'exp_time'   : params['exp_time'],
                'mag_zp'     : 25.0,
                'px_scale'   : params['px_scale'],
                'seeing_fwhm': params['new_fwhm'],

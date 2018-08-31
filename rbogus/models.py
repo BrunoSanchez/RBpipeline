@@ -35,6 +35,7 @@ class Simulation(db.Model):
     px_scale = db.Column(db.Float, nullable=False)
     ref_back_sbright = db.Column(db.Float, nullable=False)
     new_back_sbright = db.Column(db.Float, nullable=False)
+    exp_time = db.Column(db.Float, nullable=False)
 
     @property
     def path(self):
