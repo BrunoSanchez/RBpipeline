@@ -35,9 +35,12 @@ class RunSimulations(run.Step):
         sims = list(self.session.query(models.Simulation).filter_by(executed=False))
         sims = np.array(sims)
         size = int(len(sims) / 16) or 1
-        for chunk in np.array_split(sims, size):
-            yield chunk
-            break
+        for i_chunk, chunk in enumerate(np.array_split(sims, size)):
+            if i_chunk<21:
+                yield chunk
+            else:
+                break
+
 
     def validate(self, batch_list):
         return isinstance(batch_list, np.ndarray)
