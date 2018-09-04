@@ -28,6 +28,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.io import ascii
 from astropy.table import Table
+import pandas as pd
 import sep
 
 import ois
@@ -86,29 +87,42 @@ def main(params):
 
     # add some transients over the galaxies
     rows = []
-    objcat = open(os.path.join(imgs_dir, 'ref.list'))
-    for aline in objcat.readlines():
-        row = aline.split()
-        if row[0] == '200':
-            if np.random.random() > 0.80:
-                row = np.array(row, dtype=float)
-                disk_scale_len = row[8]
-                disk_scale_len_px = disk_scale_len/skyconf['px_scale']
+    #objcat = open(os.path.join(imgs_dir, 'ref.list'))
+    cols = ['code', 'x', 'y', 'mag', 'bulge_total',
+            'bulge_eff_r', 'bulge_app_aspect',
+            'bulge_PA', 'disk_scale_len',
+            'disk_app_aspect', 'disk_PA',
+            'z', 'hubble_type']
+    objcat = pd.read_table(os.path.join(imgs_dir, 'ref.list'), names=cols,
+                           sep='\s+', index_col=False)
+    gx_to_z1 = (objcat.code==200) & (objcat.z <1.)
 
-                dist_scale_units = np.random.random() * 5.
-                delta_pos = np.random.random()*2. - 1.
+    import ipdb; ipdb.set_trace()
+    for arow in objcat[gx_to_z1].itertuples(index=False):
+        if np.random.random() > 0.80:
 
-                x = row[1] + delta_pos * dist_scale_units * disk_scale_len_px
-                y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units * disk_scale_len_px
+            disk_scale_len_px = arow.disk_scale_len/skyconf['px_scale']
 
-                app_mag = 5. * (np.random.random()-0.8) + row[3]
-                if x>1014. or y>1014. or x<10. or y<10.:
-                    continue
-                else:
-                    rows.append([100, x, y, app_mag, dist_scale_units, row[3]])
+            dist_scale_units = np.random.random() * 5.
+            #delta_pos = np.random.random()*2. - 1.
+            angle = np.random.random()*2*np.pi
 
-    newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
-                                     'r_scales', 'gx_mag'])
+            x = arow.x + dist_scale_units * disk_scale_len_px * np.cos(angle)
+            y = arow.y + dist_scale_units * disk_scale_len_px * np.sin(angle)
+
+            #x = row[1] + delta_pos * dist_scale_units * disk_scale_len_px
+            #y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units * disk_scale_len_px
+
+            app_mag = 5. * (np.random.random()-0.8) + arow.mag
+            if x>1014. or y>1014. or x<10. or y<10.:
+                continue
+            else:
+                newrow = [100, x, y, app_mag, dist_scale_units, angle]
+                rows.append(newrow + list(arow))
+
+    newcat_cols = ['code', 'x', 'y', 'app_mag', 'r_scales', 'PA_angle']
+    newcat_cols = newcat_cols + ['gx_'+nam for nam in cols]
+    newcat = Table(rows=rows, names=newcat_cols)
     cat_cols = ['code', 'x', 'y', 'app_mag']
     newcat[cat_cols].write(os.path.join(cats_dir, 'transient.list'),
                            format='ascii.fast_no_header',

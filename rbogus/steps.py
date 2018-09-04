@@ -34,9 +34,9 @@ class RunSimulations(run.Step):
     def generate(self):
         sims = list(self.session.query(models.Simulation).filter_by(executed=False))
         sims = np.array(sims)
-        size = int(len(sims) / 16) or 1
+        size = int(len(sims) / 2) or 1
         for i_chunk, chunk in enumerate(np.array_split(sims, size)):
-            if i_chunk<21:
+            if i_chunk<1:
                 yield chunk
             else:
                 break
@@ -53,9 +53,7 @@ class RunSimulations(run.Step):
     def process(self, batch_list):
         bp = map(self.as_dict, batch_list)
 
-        #~ self.gen_and_load(bp[0])
-
-        with Parallel(n_jobs=4) as jobs:
+        with Parallel(n_jobs=1) as jobs:
             batch_res = jobs(
                 delayed(gen_diff.main)(params)
                 for params in bp)
@@ -163,11 +161,9 @@ class RunSimulations(run.Step):
                                if_exists='append', index=False)
 
             #----------------------------------------------------------------------
-
+            transients['simulation_id'] = np.repeat(asim.id, len(transients))
             transients['image_id'] = np.repeat(image.id, len(transients))
-
             transients['simage_id'] = np.repeat(simage.id, len(transients))
-
             transients['image_id_ois'] = np.repeat(image_ois.id, len(transients))
             transients['image_id_hot'] = np.repeat(image_hot.id, len(transients))
             # print transients

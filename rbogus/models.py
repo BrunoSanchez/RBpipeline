@@ -53,7 +53,21 @@ class Simulated(db.Model):
     y = db.Column(db.Float, nullable=False)
     app_mag = db.Column(db.Float, nullable=False)
     r_scales = db.Column(db.Float, nullable=False)
+    PA_angle = db.Column(db.Float, nullable=False)
+
     gx_mag = db.Column(db.Float, nullable=False)
+    gx_code = db.Column(db.Integer, nullable=True)
+    gx_x = db.Column(db.Float, nullable=False)
+    gx_y = db.Column(db.Float, nullable=False)
+    gx_bulge_total = db.Column(db.Float, nullable=False)
+    gx_bulge_eff_r = db.Column(db.Float, nullable=False)
+    gx_bulge_app_aspect = db.Column(db.Float, nullable=False)
+    gx_bulge_PA = db.Column(db.Float, nullable=False)
+    gx_disk_scale_len = db.Column(db.Float, nullable=False)
+    gx_disk_app_aspect = db.Column(db.Float, nullable=False)
+    gx_disk_PA = db.Column(db.Float, nullable=False)
+    gx_z = db.Column(db.Float, nullable=False)
+    gx_hubble_type = db.Column(db.Integer, nullable=False)
 
     simulation_id = db.Column(db.Integer, db.ForeignKey('Simulation.id'))
     image = db.relationship('Simulation',
