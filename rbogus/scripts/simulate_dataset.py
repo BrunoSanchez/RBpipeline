@@ -28,6 +28,7 @@ import numpy as np
 from astropy.io import fits
 from astropy.io import ascii
 from astropy.table import Table
+import pandas as pd
 import sep
 
 import ois
@@ -58,9 +59,7 @@ def main(params):
                  'im_w'     : 1024,
                  'im_h'     : 1024,
                  'px_scale' : params['px_scale'],
-                 'eff_col'  : params['eff_col'],
-                 'l'        : params['l'],
-                 'b'        : params['b']
+                 'eff_col'  : params['eff_col']
                  }
 
     w.write_stuffconf(os.path.join(conf_dir, 'conf.stuff'),
@@ -71,7 +70,7 @@ def main(params):
     # generate the Reference image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
-               'exp_time'   : 600,
+               'exp_time'   : params['exp_time'],
                'mag_zp'     : 25.,
                'px_scale'   : params['px_scale'],
                'seeing_fwhm': params['ref_fwhm'],
@@ -88,29 +87,41 @@ def main(params):
 
     # add some transients over the galaxies
     rows = []
-    objcat = open(os.path.join(imgs_dir, 'ref.list'))
-    for aline in objcat.readlines():
-        row = aline.split()
-        if row[0] == '200':
-            if np.random.random() > 0.80:
-                row = np.array(row, dtype=float)
-                disk_scale_len = row[8]
-                disk_scale_len_px = disk_scale_len/skyconf['px_scale']
+    #objcat = open(os.path.join(imgs_dir, 'ref.list'))
+    cols = ['code', 'x', 'y', 'mag', 'bulge_total',
+            'bulge_eff_r', 'bulge_app_aspect',
+            'bulge_PA', 'disk_scale_len',
+            'disk_app_aspect', 'disk_PA',
+            'z', 'hubble_type']
+    objcat = pd.read_table(os.path.join(imgs_dir, 'ref.list'), names=cols,
+                           sep='\s+', index_col=False)
+    gx_to_z1 = (objcat.code==200) & (objcat.z <1.)
 
-                dist_scale_units = np.random.random() * 5.
-                delta_pos = np.random.random()*2. - 1.
+    for arow in objcat[gx_to_z1].itertuples(index=False):
+        if np.random.random() > 0.80:
 
-                x = row[1] + delta_pos * dist_scale_units * disk_scale_len_px
-                y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units * disk_scale_len_px
+            disk_scale_len_px = arow.disk_scale_len/skyconf['px_scale']
 
-                app_mag = 5. * (np.random.random()-0.8) + row[3]
-                if x>1014. or y>1014. or x<10. or y<10.:
-                    continue
-                else:
-                    rows.append([100, x, y, app_mag, dist_scale_units, row[3]])
+            dist_scale_units = np.random.random() * 5.
+            #delta_pos = np.random.random()*2. - 1.
+            angle = np.random.random()*2*np.pi
 
-    newcat = Table(rows=rows, names=['code', 'x', 'y', 'app_mag',
-                                     'r_scales', 'gx_mag'])
+            x = arow.x + dist_scale_units * disk_scale_len_px * np.cos(angle)
+            y = arow.y + dist_scale_units * disk_scale_len_px * np.sin(angle)
+
+            #x = row[1] + delta_pos * dist_scale_units * disk_scale_len_px
+            #y = row[2] + np.sqrt(1.-delta_pos*delta_pos)*dist_scale_units * disk_scale_len_px
+
+            app_mag = 5. * (np.random.random()-0.8) + arow.mag
+            if x>1014. or y>1014. or x<10. or y<10.:
+                continue
+            else:
+                newrow = [100, x, y, app_mag, dist_scale_units, angle]
+                rows.append(newrow + list(arow))
+
+    newcat_cols = ['code', 'x', 'y', 'app_mag', 'r_scales', 'PA_angle']
+    newcat_cols = newcat_cols + ['gx_'+nam for nam in cols]
+    newcat = Table(rows=rows, names=newcat_cols)
     cat_cols = ['code', 'x', 'y', 'app_mag']
     newcat[cat_cols].write(os.path.join(cats_dir, 'transient.list'),
                            format='ascii.fast_no_header',
@@ -122,7 +133,7 @@ def main(params):
     # generate the new image
     skyconf = {'image_name' : 'test.fits',
                'image_size' : 1024,
-               'exp_time'   : 600,
+               'exp_time'   : params['exp_time'],
                'mag_zp'     : 25.0,
                'px_scale'   : params['px_scale'],
                'seeing_fwhm': params['new_fwhm'],
@@ -146,10 +157,13 @@ def main(params):
     #    D, P, S = sub.subtract()
     import time
     t0 = time.time()
-    D, P, S, mask = ps.diff(str(ref), str(new), align=False, beta=False,
-                            iterative=False, shift=False)
+    try:
+        D, P, S, mask = ps.diff(str(ref), str(new), align=False, beta=False,
+                                iterative=False, shift=False)
+    except ValueError:
+        raise
     dt_z = time.time() - t0
-
+    #import ipdb; ipdb.set_trace()
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
     utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))
@@ -177,7 +191,11 @@ def main(params):
 
 ##  With OIS
     t0 = time.time()
-    ois_d = ois.optimal_system(fits.getdata(new), fits.getdata(ref))[0]
+    n = fits.getdata(new)
+    r = fits.getdata(ref)
+    ois_d = ois.optimal_system(n, r, method='Bramich')[0]
+    del(n)
+    del(r)
     dt_o = time.time() - t0
     utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
 

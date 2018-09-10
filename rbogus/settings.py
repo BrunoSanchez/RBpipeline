@@ -12,23 +12,24 @@ import numpy as np
 
 DEBUG_PROCESS = True
 
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.WARNING #  INFO DEBUG
 
 LOG_FORMAT = "[RBogus-%(levelname)s @ %(asctime)-15s] %(message)s"
 
-CONNECTION = 'sqlite:///resimulation-dev.db'
+CONNECTION = 'postgresql://jarvis:Bessel0@toritos/resimulation'
+#CONNECTION = 'sqlite:///resimulation-dev.db'
 
 LOADER = "rbogus.load.Load"
 
 PIPELINE_SETUP = "rbogus.pipeline.RBogus"
 
 STEPS = [
-    "rbogus.steps.RunSimulations"
-    #~ "rbogus.steps.StepCrossMatch",
-    #~ "rbogus.steps.StepSCrossMatch",
-    #~ "rbogus.steps.StepSCorrCrossMatch",
-    #~ "rbogus.steps.StepCrossMatchOIS",
-    #~ "rbogus.steps.StepCrossMatchHOT"
+    "rbogus.steps.RunSimulations",
+    "rbogus.steps.StepCrossMatch",
+    "rbogus.steps.StepSCrossMatch",
+    "rbogus.steps.StepSCorrCrossMatch",
+    "rbogus.steps.StepCrossMatchOIS",
+    "rbogus.steps.StepCrossMatchHOT"
 
 ]
 

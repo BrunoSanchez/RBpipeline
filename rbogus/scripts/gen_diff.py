@@ -46,13 +46,17 @@ def main(params):
     cats_dir = os.path.join(curr_dir, "cats")
     if not os.path.isdir(cats_dir):
         os.makedirs(cats_dir)
-    results_dir = os.path.join(curr_dir, "results")
-    if not os.path.isdir(results_dir):
-        os.makedirs(results_dir)
+    #~ results_dir = os.path.join(curr_dir, "results")
+    #~ if not os.path.isdir(results_dir):
+        #~ os.makedirs(results_dir)
 
     #Generation happens here
-    transients, times = sd.main(params)
-    print('succesful generation')
+    try:
+        transients, times = sd.main(params)
+        print('succesful generation')
+    except:
+        return('error101')
+
     #import ipdb; ipdb.set_trace()
     #zp, slope, ref_fwhm)
     #
@@ -78,7 +82,7 @@ def main(params):
 # SCorr Detections
 # =============================================================================
     scorrdetections = ascii.read(os.path.join(curr_dir, 's_corr_detected.csv')).to_pandas()
-    scorrdetections['id'] = np.repeat(None, len(scorrdetections))
+    #scorrdetections['id'] = np.repeat(None, len(scorrdetections))
 
 # =============================================================================
 # S Detections
@@ -100,7 +104,7 @@ def main(params):
     sdetections['RATIO'] = ratio
     sdetections['ROUNDNESS'] = roundness
     sdetections['PEAK_CENTROID'] = pk_cent
-    sdetections['id'] = np.repeat(None, len(deltax))
+    #sdetections['id'] = np.repeat(None, len(deltax))
 
 # =============================================================================
 #  PS detections
@@ -122,7 +126,7 @@ def main(params):
     detections['RATIO'] = ratio
     detections['ROUNDNESS'] = roundness
     detections['PEAK_CENTROID'] = pk_cent
-    detections['id'] = np.repeat(None, len(deltax))
+    #detections['id'] = np.repeat(None, len(deltax))
 
 # =============================================================================
 #   OIS detections
@@ -144,7 +148,7 @@ def main(params):
     detections_ois['RATIO'] = ratio
     detections_ois['ROUNDNESS'] = roundness
     detections_ois['PEAK_CENTROID'] = pk_cent
-    detections_ois['id'] = np.repeat(None, len(deltax))
+    #detections_ois['id'] = np.repeat(None, len(deltax))
 
 # =============================================================================
 #   HOT detections
@@ -166,15 +170,35 @@ def main(params):
     detections_hot['RATIO'] = ratio
     detections_hot['ROUNDNESS'] = roundness
     detections_hot['PEAK_CENTROID'] = pk_cent
-    detections_hot['id'] = np.repeat(None, len(deltax))
+    #detections_hot['id'] = np.repeat(None, len(deltax))
 
 
-    detections.to_pickle(os.path.join(results_dir, 'detections.pkl'), protocol=2)
-    detections_ois.to_pickle(os.path.join(results_dir, 'detections_ois.pkl'), protocol=2)
-    detections_hot.to_pickle(os.path.join(results_dir, 'detections_hot.pkl'), protocol=2)
-    transients.to_pickle(os.path.join(results_dir, 'transients.pkl'), protocol=2)
-    sdetections.to_pickle(os.path.join(results_dir, 'sdetections.pkl'), protocol=2)
-    scorrdetections.to_pickle(os.path.join(results_dir, 'scorrdetections.pkl'), protocol=2)
-    with open(os.path.join(results_dir, 'times.pkl'), 'wb') as fp:
-        pickle.dump(times, fp)
+    #~ detections.to_pickle(os.path.join(results_dir, 'detections.pkl'),
+    #~ protocol=2)
+    #~ detections_ois.to_pickle(os.path.join(results_dir, 'detections_ois.pkl'),
+    #~ protocol=2)
+    #~ detections_hot.to_pickle(os.path.join(results_dir, 'detections_hot.pkl'),
+    #~ protocol=2)
+    #~ transients.to_pickle(os.path.join(results_dir, 'transients.pkl'),
+    #~ protocol=2)
+    #~ sdetections.to_pickle(os.path.join(results_dir, 'sdetections.pkl'),
+    #~ protocol=2)
+    #~ scorrdetections.to_pickle(os.path.join(results_dir,
+    #~ 'scorrdetections.pkl'), protocol=2)
+    #~ with open(os.path.join(results_dir, 'times.pkl'), 'w') as fp:
+        #~ pickle.dump(times, fp, protocol=2)
+    results = []
+
+    results.append(diff_path)
+    results.append(detections)
+    results.append(diff_ois_path)
+    results.append(detections_ois)
+    results.append(diff_hot_path)
+    results.append(detections_hot)
+    results.append(transients)
+    results.append(sdetections)
+    results.append(scorrdetections)
+    results.append(times)
+
+    return results
 
