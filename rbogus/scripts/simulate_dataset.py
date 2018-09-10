@@ -97,7 +97,6 @@ def main(params):
                            sep='\s+', index_col=False)
     gx_to_z1 = (objcat.code==200) & (objcat.z <1.)
 
-    import ipdb; ipdb.set_trace()
     for arow in objcat[gx_to_z1].itertuples(index=False):
         if np.random.random() > 0.80:
 
@@ -164,7 +163,7 @@ def main(params):
     except ValueError:
         raise
     dt_z = time.time() - t0
-
+    #import ipdb; ipdb.set_trace()
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
     utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))

@@ -18,6 +18,7 @@
 # =============================================================================
 
 from corral import run
+from corral.conf import settings
 
 from . import models
 from . import util as u
@@ -34,9 +35,9 @@ class RunSimulations(run.Step):
     def generate(self):
         sims = list(self.session.query(models.Simulation).filter_by(executed=False))
         sims = np.array(sims)
-        size = int(len(sims) / 2) or 1
+        size = int(len(sims) / 8) or 1
         for i_chunk, chunk in enumerate(np.array_split(sims, size)):
-            if i_chunk<1:
+            if i_chunk<1024:
                 yield chunk
             else:
                 break
@@ -53,7 +54,7 @@ class RunSimulations(run.Step):
     def process(self, batch_list):
         bp = map(self.as_dict, batch_list)
 
-        with Parallel(n_jobs=1) as jobs:
+        with Parallel(n_jobs=2) as jobs:
             batch_res = jobs(
                 delayed(gen_diff.main)(params)
                 for params in bp)
@@ -65,6 +66,10 @@ class RunSimulations(run.Step):
                 asim.failed_to_subtract = True
                 asim.possible_saturation = True
                 continue
+
+            if settings.COMPRESS_AFTER_SIMULATE:
+                import os
+                os.system('fpack -D -Y {}/*.fits'.format(params['path']))
 
             diff_path      = results[0]
             detections     = results[1]
@@ -173,6 +178,7 @@ class RunSimulations(run.Step):
             asim.executed = True
             asim.failed_to_subtract = False
             asim.possible_saturation = False
+
 
 
 

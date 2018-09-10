@@ -45,9 +45,9 @@ def main(params):
     cats_dir = os.path.join(curr_dir, "cats")
     if not os.path.isdir(cats_dir):
         os.makedirs(cats_dir)
-    results_dir = os.path.join(curr_dir, "results")
-    if not os.path.isdir(results_dir):
-        os.makedirs(results_dir)
+    #~ results_dir = os.path.join(curr_dir, "results")
+    #~ if not os.path.isdir(results_dir):
+        #~ os.makedirs(results_dir)
 
 
 
