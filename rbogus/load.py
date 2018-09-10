@@ -52,7 +52,7 @@ class Load(run.Loader):
 
     def generate(self):
         import ujson
-        with open(stgs.SIM_CUBE, 'rb') as fp:
+        with open(stgs.SIM_CUBE, 'r') as fp:
             sims = ujson.load(fp)
         for idx, params in enumerate(sims):
             print("Generating sim {}/{}".format(idx, len(sims)))

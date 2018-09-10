@@ -1,10 +1,12 @@
 """Local settings for rbpipeline"""
 
-PATH = "/home/bruno/Data/NewRBpipeline/output"
+#PATH = "/home/bruno/Data/NewRBpipeline/output"
 
 #~ IMGS_PATH = '/home/bruno/Data/NewRBpipeline/images'
 #~ CONFIG_PATH = '/home/bruno/Data/NewRBpipeline/config'
 #~ CATS_PATH = '/home/bruno/Data/NewRBpipeline/cats'
+
+PATH = '/mnt/is0/bos0109/data_sim_O2/output'
 
 #IMGS_PATH = '/mnt/is0/bos0109/data_sim_O2/images'
 #CONFIG_PATH = '/mnt/is0/bos0109/data_sim_O2/config'
@@ -54,7 +56,7 @@ else:
                              'new_back_sbright' : new_back_sbright
                              }
                             SIM_CUBE.append(confs)
-    #import ipdb; ipdb.set_trace()
+    import ipdb; ipdb.set_trace()
     import ujson
-    with open(CUBE, 'wb') as fp:
+    with open(CUBE, 'w') as fp:
         ujson.dump(SIM_CUBE, fp)
