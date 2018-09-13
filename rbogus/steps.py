@@ -34,17 +34,19 @@ from sqlalchemy.sql.expression import func
 class RunSimulations(run.Step):
 
     def generate(self):
-
         sims = self.session.query(models.Simulation).filter_by(
-                executed=False).filter_by(loaded=False).order_by(
-                func.random()).limit(64)
+                    executed=False).filter_by(loaded=False).order_by(
+                    func.random()).limit(100)
         for asim in sims:
             asim.loaded = True
         self.session.commit()
+        
         sims = np.array(list(sims))
-        size = int(len(sims) / 4) or 1
+        size = int(len(sims) / 16) or 1
+
         for i_chunk, chunk in enumerate(np.array_split(sims, size)):
-            if i_chunk<2:
+            if i_chunk<5:
+                self.session.commit()
                 yield chunk
             else:
                 break
@@ -90,11 +92,16 @@ class RunSimulations(run.Step):
                 asim.failed_to_subtract = True
                 asim.possible_saturation = True
                 asim.loaded = False
+                print('Failed to subtract. Possible saturation!')
                 continue
 
             if settings.COMPRESS_AFTER_SIMULATE:
-                import os
-                os.system('fpack -D -Y {}/*.fits'.format(params['path']))
+                try:
+                     import os
+                     os.system('fpack -D -Y {}/*.fits'.format(params['path']))
+                     print("\n Compressing\n")
+                except:
+                     print("\n Could not compress\n")
 
             diff_path      = results[0]
             detections     = results[1]
@@ -112,7 +119,7 @@ class RunSimulations(run.Step):
             # =====================================================================
             image = models.Images()
             image.path = params['path']
-            image.simulation = asim
+            image.simulationi_id = asim.id
             image.crossmatched = False
             image.exec_time = times[0]
 
@@ -200,17 +207,20 @@ class RunSimulations(run.Step):
             transients.to_sql('Simulated', self.session.get_bind(),
                               if_exists='append', index=False)
 
+            print('\nSetting executed true')
             asim.executed = True
             asim.loaded = False
             asim.failed_to_subtract = False
             asim.possible_saturation = False
-
+            asim.loaded = False
+            print('\n loaded asim code = {}\n\n'.format(asim.code))
 
 
 
 class StepCrossMatch(run.Step):
 
     def setup(self):
+        self.session.autoflush = False
         self.imgs_to_process = self.session.query(models.Images).filter(
             models.Images.crossmatched == False).order_by(models.Images.id)
 
@@ -245,7 +255,7 @@ class StepCrossMatch(run.Step):
         for i in range(len(IDs)):
             if IDs[i]>0:
                 real = models.Reals()
-                real.detected_id = IDs[i]
+                real.detected_id = int(IDs[i])
                 real.simulated = simul_to_cx[i]
                 self.session.add(real)
             else:
@@ -303,7 +313,7 @@ class StepSCrossMatch(run.Step):
         for i in range(len(IDs)):
             if IDs[i]>0:
                 real = models.SReals()
-                real.detected_id = IDs[i]
+                real.detected_id = int(IDs[i])
                 real.simulated = simul_to_cx[i]
                 self.session.add(real)
             else:
@@ -361,7 +371,7 @@ class StepSCorrCrossMatch(run.Step):
         for i in range(len(IDs)):
             if IDs[i]>0:
                 real = models.SCorrReals()
-                real.detected_id = IDs[i]
+                real.detected_id = int(IDs[i])
                 real.simulated = simul_to_cx[i]
                 self.session.add(real)
             else:
@@ -419,7 +429,7 @@ class StepCrossMatchOIS(run.Step):
         for i in range(len(IDs)):
             if IDs[i]>0:
                 real = models.RealsOIS()
-                real.detected_id = IDs[i]
+                real.detected_id = int(IDs[i])
                 real.simulated = simul_to_cx[i]
                 self.session.add(real)
             else:
@@ -476,7 +486,7 @@ class StepCrossMatchHOT(run.Step):
         for i in range(len(IDs)):
             if IDs[i]>0:
                 real = models.RealsHOT()
-                real.detected_id = IDs[i]
+                real.detected_id = int(IDs[i])
                 real.simulated = simul_to_cx[i]
                 self.session.add(real)
             else:

@@ -242,7 +242,7 @@ class SImages(db.Model):
     exec_time = db.Column(db.Float, nullable=False)
 
     simulation_id = db.Column(db.Integer, db.ForeignKey('Simulation.id'))
-    image = db.relationship('Simulation',
+    simulation = db.relationship('Simulation',
                             backref=db.backref('simages', order_by=id))
 
     def __repr__(self):

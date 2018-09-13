@@ -76,6 +76,9 @@ rbogus/local_settings*
 *.fits
 *.FITS
 
+# Slurm outputs
+slurm*
+
 # properimage files
 ._*.dat
 ._*.map

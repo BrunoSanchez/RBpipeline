@@ -38,8 +38,9 @@ def main(params):
     #suffix = 'img{}'.format(str(index).zfill(5))
     #curr_dir = os.path.join(settings.IMGS_PATH, suffix)
     curr_dir = params['path']
-
+    print(curr_dir)
     conf_dir = os.path.join(curr_dir, "conf")
+    print(conf_dir)
     if not os.path.isdir(conf_dir):
         os.makedirs(conf_dir)
     cats_dir = os.path.join(curr_dir, "cats")
@@ -48,8 +49,6 @@ def main(params):
     #~ results_dir = os.path.join(curr_dir, "results")
     #~ if not os.path.isdir(results_dir):
         #~ os.makedirs(results_dir)
-
-
 
     #Generation happens here
     try:
