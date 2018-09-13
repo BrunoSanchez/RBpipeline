@@ -125,7 +125,7 @@ def run_sex(sexconf, img_path=None, cat_output=None):
         return
 
     else:
-        cmd = "sextractor {img_path} -c {conf} ".format(conf=sexconf,
+        cmd = "sex {img_path} -c {conf} ".format(conf=sexconf,
                                                  img_path=img_path)
         #cmd = "/home/bos0109/packages/sextractor/bin/sex {img_path} -c {conf} ".format(conf=sexconf,
         #                                         img_path=img_path)
@@ -133,7 +133,7 @@ def run_sex(sexconf, img_path=None, cat_output=None):
         cmd = cmd + " -CATALOG_NAME {}".format(cat_output)
 
     cmd = shlex.split(cmd)
-    print(cmd)
+    #print(cmd)
     subprocess.call(cmd)
     return cat_output
 

@@ -70,7 +70,7 @@ class Simulated(db.Model):
     gx_hubble_type = db.Column(db.Integer, nullable=False)
 
     simulation_id = db.Column(db.Integer, db.ForeignKey('Simulation.id'))
-    image = db.relationship('Simulation',
+    simulation = db.relationship('Simulation',
                             backref=db.backref('simulateds', order_by=id))
 
     image_id = db.Column(db.Integer, db.ForeignKey('Images.id'))
@@ -112,7 +112,7 @@ class Images(db.Model):
     exec_time = db.Column(db.Float, nullable=False)
 
     simulation_id = db.Column(db.Integer, db.ForeignKey('Simulation.id'))
-    image = db.relationship('Simulation',
+    simulation = db.relationship('Simulation',
                             backref=db.backref('images', order_by=id))
 
     def __repr__(self):
@@ -360,7 +360,7 @@ class SCorrImages(db.Model):
     exec_time = db.Column(db.Float, nullable=False)
 
     simulation_id = db.Column(db.Integer, db.ForeignKey('Simulation.id'))
-    image = db.relationship('Simulation',
+    simulation = db.relationship('Simulation',
                             backref=db.backref('scorrimages', order_by=id))
 
     def __repr__(self):
@@ -447,7 +447,7 @@ class ImagesOIS(db.Model):
     exec_time = db.Column(db.Float, nullable=False)
 
     simulation_id = db.Column(db.Integer, db.ForeignKey('Simulation.id'))
-    image = db.relationship('Simulation',
+    simulation = db.relationship('Simulation',
                             backref=db.backref('oisimages', order_by=id))
 
     def __repr__(self):
@@ -577,7 +577,7 @@ class ImagesHOT(db.Model):
     exec_time = db.Column(db.Float, nullable=False)
 
     simulation_id = db.Column(db.Integer, db.ForeignKey('Simulation.id'))
-    image = db.relationship('Simulation',
+    simulation = db.relationship('Simulation',
                             backref=db.backref('hotimages', order_by=id))
     def __repr__(self):
         return self.path

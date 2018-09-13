@@ -155,6 +155,7 @@ def main(params):
 ##  With properimage
     #with ps.ImageSubtractor(ref, new, align=False, solve_beta=False) as sub:
     #    D, P, S = sub.subtract()
+    print('Starting properimage')
     import time
     t0 = time.time()
     try:
@@ -167,6 +168,7 @@ def main(params):
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
     utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))
+    print('Finish storing properimage')
 
     # import ipdb; ipdb.set_trace()
     scorrdetected = utils.find_S_local_maxima(S, threshold=3.5)
@@ -190,20 +192,30 @@ def main(params):
                 overwrite=True)
 
 ##  With OIS
+    print('Starting OIS')
     t0 = time.time()
     n = fits.getdata(new)
     r = fits.getdata(ref)
-    ois_d = ois.optimal_system(n, r, method='Bramich')[0]
+    import statprof
+    statprof.start()
+    try:
+        ois_d = ois.optimal_system(n, r, method='Bramich')[0]
+    finally:
+        statprof.stop()
+        statprof.display(open('output_statprof.txt', 'w'))
     del(n)
     del(r)
     dt_o = time.time() - t0
     utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
+    print('Finish storing OIS')
 
 ##  With HOTPANTS
+    print('Starting hotpants')
     t0 = time.time()
     os.system('hotpants -v 0 -inim {} -tmplim {} -outim {} -tu 400000 -iu 40000'.format(new, ref,
         os.path.join(imgs_dir, 'diff_hot.fits')))
     dt_h = time.time() - t0
+    print('Finish hotpants')
 
     return [newcat.to_pandas(), [dt_z, dt_o, dt_h]]
 

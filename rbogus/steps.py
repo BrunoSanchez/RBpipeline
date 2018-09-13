@@ -25,6 +25,7 @@ from . import util as u
 import numpy as np
 from joblib import Parallel, delayed
 from .scripts import gen_diff
+from sqlalchemy.sql.expression import func
 
 # =============================================================================
 # STEPS
@@ -33,15 +34,26 @@ from .scripts import gen_diff
 class RunSimulations(run.Step):
 
     def generate(self):
-        sims = list(self.session.query(models.Simulation).filter_by(executed=False))
-        sims = np.array(sims)
-        size = int(len(sims) / 8) or 1
+
+        sims = self.session.query(models.Simulation).filter_by(
+                executed=False).filter_by(loaded=False).order_by(
+                func.random()).limit(64)
+        for asim in sims:
+            asim.loaded = True
+        self.session.commit()
+        sims = np.array(list(sims))
+        size = int(len(sims) / 4) or 1
         for i_chunk, chunk in enumerate(np.array_split(sims, size)):
-            if i_chunk<1024:
+            if i_chunk<2:
                 yield chunk
             else:
                 break
 
+    #~ def setup(self):
+        #~ self.jobs = Parallel(n_jobs=1, backend='multiprocessing')
+
+    #~ def teardown(self, *args):
+        #~ del self.jobs
 
     def validate(self, batch_list):
         return isinstance(batch_list, np.ndarray)
@@ -51,20 +63,33 @@ class RunSimulations(run.Step):
         params["path"] = a_sim.path
         return params
 
+    #~ def process(self, batch_list):
+        #~ import statprof
+        #~ statprof.start()
+        #~ try:
+            #~ self.do_process(batch_list)
+        #~ finally:
+            #~ statprof.stop()
+            #~ statprof.display()
+            #~ import ipdb; ipdb.set_trace()
+
+    #~ def do_process(self, batch_list):
     def process(self, batch_list):
         bp = map(self.as_dict, batch_list)
 
-        with Parallel(n_jobs=2) as jobs:
-            batch_res = jobs(
-                delayed(gen_diff.main)(params)
-                for params in bp)
+        with Parallel(n_jobs=2, backend='multiprocessing') as jobs:
+            batch_res = jobs(delayed(gen_diff.main)(params)
+                                for params in bp)
 
         for results, params, asim in zip(batch_res, bp, batch_list):
+        #~ for params, asim in zip(bp, batch_list):
+            #~ results = gen_diff.main(params)
 
             if results == 'error101':
                 asim.executed = True
                 asim.failed_to_subtract = True
                 asim.possible_saturation = True
+                asim.loaded = False
                 continue
 
             if settings.COMPRESS_AFTER_SIMULATE:
@@ -92,11 +117,11 @@ class RunSimulations(run.Step):
             image.exec_time = times[0]
 
             self.session.add(image)
-            self.session.commit()
+            #self.session.commit()
 
             detections['image_id'] = np.repeat(image.id, len(detections))
             detections.to_sql('Detected', self.session.get_bind(),
-                               if_exists='append', index=False)
+                              if_exists='append', index=False)
 
             # ==================================================================
             # sdetect
@@ -108,7 +133,7 @@ class RunSimulations(run.Step):
             simage.exec_time = times[0]
 
             self.session.add(simage)
-            self.session.commit()
+            #self.session.commit()
 
             #import ipdb; ipdb.set_trace()
             sdetections['image_id'] = np.repeat(simage.id, len(sdetections))
@@ -116,7 +141,7 @@ class RunSimulations(run.Step):
             sdetections['xmax_col'] = sdetections['xmax']
             sdetections.drop(['xmin', 'xmax'], axis=1, inplace=True)
             sdetections.to_sql('SDetected', self.session.get_bind(),
-                                if_exists='append', index=False)
+                               if_exists='append', index=False)
 
             # =====================================================================
             # scorrdetect
@@ -128,11 +153,11 @@ class RunSimulations(run.Step):
             scorrimage.exec_time = times[0]
 
             self.session.add(scorrimage)
-            self.session.commit()
+            #self.session.commit()
 
             scorrdetections['image_id'] = np.repeat(scorrimage.id, len(scorrdetections))
             scorrdetections.to_sql('SCorrDetected', self.session.get_bind(),
-                                if_exists='append', index=False)
+                                    if_exists='append', index=False)
 
             # =====================================================================
             # OIS
@@ -144,11 +169,11 @@ class RunSimulations(run.Step):
             image_ois.exec_time = times[1]
 
             self.session.add(image_ois)
-            self.session.commit()
+            #self.session.commit()
 
             detections_ois['image_id'] = np.repeat(image_ois.id, len(detections_ois))
             detections_ois.to_sql('DetectedOIS', self.session.get_bind(),
-                               if_exists='append', index=False)
+                                  if_exists='append', index=False)
 
             # =====================================================================
             # HOTPANTS
@@ -159,11 +184,11 @@ class RunSimulations(run.Step):
             image_hot.exec_time = times[2]
 
             self.session.add(image_hot)
-            self.session.commit()
+            #self.session.commit()
 
             detections_hot['image_id'] = np.repeat(image_hot.id, len(detections_hot))
             detections_hot.to_sql('DetectedHOT', self.session.get_bind(),
-                               if_exists='append', index=False)
+                                  if_exists='append', index=False)
 
             #----------------------------------------------------------------------
             transients['simulation_id'] = np.repeat(asim.id, len(transients))
@@ -176,6 +201,7 @@ class RunSimulations(run.Step):
                               if_exists='append', index=False)
 
             asim.executed = True
+            asim.loaded = False
             asim.failed_to_subtract = False
             asim.possible_saturation = False
 
