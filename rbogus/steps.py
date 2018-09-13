@@ -25,6 +25,7 @@ from . import util as u
 import numpy as np
 from joblib import Parallel, delayed
 from .scripts import gen_diff
+from sqlalchemy.sql.expression import func
 
 # =============================================================================
 # STEPS
@@ -33,11 +34,18 @@ from .scripts import gen_diff
 class RunSimulations(run.Step):
 
     def generate(self):
-        sims = list(self.session.query(models.Simulation).filter_by(executed=False))
-        sims = np.array(sims)
-        size = int(len(sims) / 8) or 1
+        sims = self.session.query(models.Simulation).filter_by(
+                    executed=False).filter_by(loaded=False).order_by(
+                    func.random()).limit(5000)
+        for asim in sims:
+            asim.loaded = True
+        self.session.commit()
+        
+        sims = np.array(list(sims))
+        size = int(len(sims) / 48) or 1
+
         for i_chunk, chunk in enumerate(np.array_split(sims, size)):
-            if i_chunk<1024:
+            if i_chunk<3:
                 yield chunk
             else:
                 break
@@ -51,24 +59,34 @@ class RunSimulations(run.Step):
         return params
 
     def process(self, batch_list):
-        bp = map(self.as_dict, batch_list)
+        bp = list(map(self.as_dict, batch_list))
+
+        #batch_res = [gen_diff.main(self.as_dict(batch_list[0]))]
         
-        with Parallel(n_jobs=2) as jobs:
+        with Parallel(n_jobs=24, backend='multiprocessing') as jobs:
             batch_res = jobs(
                 delayed(gen_diff.main)(params)
                 for params in bp)
-
+        #import ipdb; ipdb.set_trace() 
+        
         for results, params, asim in zip(batch_res, bp, batch_list):
+            #print(type(results), params, type(asim))
 
             if results == 'error101':
                 asim.executed = True
                 asim.failed_to_subtract = True
                 asim.possible_saturation = True
+                asim.loaded = False
+                print('Failed to subtract. Possible saturation!')
                 continue
 
             if settings.COMPRESS_AFTER_SIMULATE:
-                import os
-                os.system('fpack -D -Y {}/*.fits'.format(params['path']))
+                try:
+                     import os
+                     os.system('fpack -D -Y {}/*.fits'.format(params['path']))
+                     print("\n Compressing\n")
+                except:
+                     print("\n Could not compress\n")
 
             diff_path      = results[0]
             detections     = results[1]
@@ -86,12 +104,12 @@ class RunSimulations(run.Step):
             # =====================================================================
             image = models.Images()
             image.path = params['path']
-            image.simulation = asim
+            image.simulationi_id = asim.id
             image.crossmatched = False
             image.exec_time = times[0]
 
             self.session.add(image)
-            self.session.commit()
+            #self.session.commit()
 
             detections['image_id'] = np.repeat(image.id, len(detections))
             detections.to_sql('Detected', self.session.get_bind(),
@@ -107,7 +125,7 @@ class RunSimulations(run.Step):
             simage.exec_time = times[0]
 
             self.session.add(simage)
-            self.session.commit()
+            #self.session.commit()
 
             #import ipdb; ipdb.set_trace()
             sdetections['image_id'] = np.repeat(simage.id, len(sdetections))
@@ -127,7 +145,7 @@ class RunSimulations(run.Step):
             scorrimage.exec_time = times[0]
 
             self.session.add(scorrimage)
-            self.session.commit()
+            #self.session.commit()
 
             scorrdetections['image_id'] = np.repeat(scorrimage.id, len(scorrdetections))
             scorrdetections.to_sql('SCorrDetected', self.session.get_bind(),
@@ -143,7 +161,7 @@ class RunSimulations(run.Step):
             image_ois.exec_time = times[1]
 
             self.session.add(image_ois)
-            self.session.commit()
+            #self.session.commit()
 
             detections_ois['image_id'] = np.repeat(image_ois.id, len(detections_ois))
             detections_ois.to_sql('DetectedOIS', self.session.get_bind(),
@@ -158,7 +176,7 @@ class RunSimulations(run.Step):
             image_hot.exec_time = times[2]
 
             self.session.add(image_hot)
-            self.session.commit()
+            #self.session.commit()
 
             detections_hot['image_id'] = np.repeat(image_hot.id, len(detections_hot))
             detections_hot.to_sql('DetectedHOT', self.session.get_bind(),
@@ -174,297 +192,300 @@ class RunSimulations(run.Step):
             transients.to_sql('Simulated', self.session.get_bind(),
                               if_exists='append', index=False)
 
+            print('\nSetting executed true')
             asim.executed = True
             asim.failed_to_subtract = False
             asim.possible_saturation = False
+            asim.loaded = False
+            print('\n loaded asim code = {}\n\n'.format(asim.code))
 
 
 
+class StepCrossMatch(run.Step):
 
-# class StepCrossMatch(run.Step):
-# 
-#     def setup(self):
-#         self.imgs_to_process = self.session.query(models.Images).filter(
-#             models.Images.crossmatched == False).order_by(models.Images.id)
-# 
-#     def generate(self):
-#         for img in self.imgs_to_process:
-# 
-#             detect_to_cx = self.session.query(models.Detected).filter(
-#                 img.id==models.Detected.image_id).all()
-# 
-#             simul_to_cx = self.session.query(models.Simulated).filter(
-#                 img.id==models.Simulated.image_id).all()
-# 
-#             yield [img, detect_to_cx, simul_to_cx]
-# 
-#     def validate(self, batch_list):
-#         return isinstance(batch_list, list)
-# 
-#     def process(self, batch_list):
-# 
-#         img, detect_to_cx, simul_to_cx = batch_list
-#         if len(detect_to_cx) is 0:
-#             print('no detections')
-#             for asim in simul_to_cx:
-#                 und = models.Undetected()
-#                 und.simulated = asim
-#                 self.session.add(und)
-#             img.crossmatched = True
-#             return
-# 
-#         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
-# 
-#         for i in range(len(IDs)):
-#             if IDs[i]>0:
-#                 real = models.Reals()
-#                 real.detected_id = IDs[i]
-#                 real.simulated = simul_to_cx[i]
-#                 self.session.add(real)
-#             else:
-#                 und = models.Undetected()
-#                 und.simulated = simul_to_cx[i]
-#                 self.session.add(und)
-# 
-#         for detect in detect_to_cx:
-#             if detect.id not in IDs:
-#                 bogus = models.Bogus()
-#                 bogus.detected = detect
-#                 self.session.add(bogus)
-# 
-#                 detect.IS_REAL = False
-#             else:
-#                 detect.IS_REAL = True
-# 
-#         img.crossmatched = True
-# 
-# 
-# class StepSCrossMatch(run.Step):
-# 
-#     def setup(self):
-#         self.imgs_to_process = self.session.query(models.SImages).filter(
-#             models.SImages.crossmatched == False).order_by(models.SImages.id)
-# 
-#     def generate(self):
-#         for img in self.imgs_to_process:
-# 
-#             detect_to_cx = self.session.query(models.SDetected).filter(
-#                 img.id==models.SDetected.image_id).all()
-# 
-#             simul_to_cx = self.session.query(models.Simulated).filter(
-#                 img.id==models.Simulated.image_id).all()
-# 
-#             yield [img, detect_to_cx, simul_to_cx]
-# 
-#     def validate(self, batch_list):
-#         return isinstance(batch_list, list)
-# 
-#     def process(self, batch_list):
-# 
-#         img, detect_to_cx, simul_to_cx = batch_list
-#         if len(detect_to_cx) is 0:
-#             print('no detections')
-#             for asim in simul_to_cx:
-#                 und = models.Undetected()
-#                 und.simulated = asim
-#                 self.session.add(und)
-#             img.crossmatched = True
-#             return
-# 
-#         IDs = u.matching(detect_to_cx, simul_to_cx, sep=True, radius=2.5)
-# 
-#         for i in range(len(IDs)):
-#             if IDs[i]>0:
-#                 real = models.SReals()
-#                 real.detected_id = IDs[i]
-#                 real.simulated = simul_to_cx[i]
-#                 self.session.add(real)
-#             else:
-#                 und = models.SUndetected()
-#                 und.simulated = simul_to_cx[i]
-#                 self.session.add(und)
-# 
-#         for detect in detect_to_cx:
-#             if detect.id not in IDs:
-#                 bogus = models.SBogus()
-#                 bogus.detected = detect
-#                 self.session.add(bogus)
-# 
-#                 detect.IS_REAL = False
-#             else:
-#                 detect.IS_REAL = True
-# 
-#         img.crossmatched = True
-# 
-# 
-# class StepSCorrCrossMatch(run.Step):
-# 
-#     def setup(self):
-#         self.imgs_to_process = self.session.query(models.SCorrImages).filter(
-#             models.SCorrImages.crossmatched == False).order_by(models.SCorrImages.id)
-# 
-#     def generate(self):
-#         for img in self.imgs_to_process:
-# 
-#             detect_to_cx = self.session.query(models.SCorrDetected).filter(
-#                 img.id==models.SCorrDetected.image_id).all()
-# 
-#             simul_to_cx = self.session.query(models.Simulated).filter(
-#                 img.id==models.Simulated.image_id).all()
-# 
-#             yield [img, detect_to_cx, simul_to_cx]
-# 
-#     def validate(self, batch_list):
-#         return isinstance(batch_list, list)
-# 
-#     def process(self, batch_list):
-# 
-#         img, detect_to_cx, simul_to_cx = batch_list
-#         if len(detect_to_cx) is 0:
-#             print('no detections')
-#             for asim in simul_to_cx:
-#                 und = models.Undetected()
-#                 und.simulated = asim
-#                 self.session.add(und)
-#             img.crossmatched = True
-#             return
-# 
-#         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.5)
-# 
-#         for i in range(len(IDs)):
-#             if IDs[i]>0:
-#                 real = models.SCorrReals()
-#                 real.detected_id = IDs[i]
-#                 real.simulated = simul_to_cx[i]
-#                 self.session.add(real)
-#             else:
-#                 und = models.SCorrUndetected()
-#                 und.simulated = simul_to_cx[i]
-#                 self.session.add(und)
-# 
-#         for detect in detect_to_cx:
-#             if detect.id not in IDs:
-#                 bogus = models.SCorrBogus()
-#                 bogus.detected = detect
-#                 self.session.add(bogus)
-# 
-#                 detect.IS_REAL = False
-#             else:
-#                 detect.IS_REAL = True
-# 
-#         img.crossmatched = True
-# 
-# 
-# class StepCrossMatchOIS(run.Step):
-# 
-#     def setup(self):
-#         self.imgs_to_process = self.session.query(models.ImagesOIS).filter(
-#             models.ImagesOIS.crossmatched == False).order_by(models.ImagesOIS.id)
-# 
-#     def generate(self):
-#         for img in self.imgs_to_process:
-# 
-#             detect_to_cx = self.session.query(models.DetectedOIS).filter(
-#                 img.id==models.DetectedOIS.image_id).all()
-# 
-#             simul_to_cx = self.session.query(models.Simulated).filter(
-#                 img.id==models.Simulated.image_id_ois).all()
-# 
-#             yield [img, detect_to_cx, simul_to_cx]
-# 
-#     def validate(self, batch_list):
-#         return isinstance(batch_list, list)
-# 
-#     def process(self, batch_list):
-# 
-#         img, detect_to_cx, simul_to_cx = batch_list
-#         if len(detect_to_cx) is 0:
-#             print('no detections')
-#             for asim in simul_to_cx:
-#                 und = models.Undetected()
-#                 und.simulated = asim
-#                 self.session.add(und)
-#             img.crossmatched = True
-#             return
-# 
-#         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
-# 
-#         for i in range(len(IDs)):
-#             if IDs[i]>0:
-#                 real = models.RealsOIS()
-#                 real.detected_id = IDs[i]
-#                 real.simulated = simul_to_cx[i]
-#                 self.session.add(real)
-#             else:
-#                 und = models.UndetectedOIS()
-#                 und.simulated = simul_to_cx[i]
-#                 self.session.add(und)
-# 
-#         for detect in detect_to_cx:
-#             if detect.id not in IDs:
-#                 bogus = models.BogusOIS()
-#                 bogus.detected = detect
-#                 self.session.add(bogus)
-# 
-#                 detect.IS_REAL = False
-#             else:
-#                 detect.IS_REAL = True
-# 
-#         img.crossmatched = True
-# 
-# 
-# class StepCrossMatchHOT(run.Step):
-# 
-#     def setup(self):
-#         self.imgs_to_process = self.session.query(models.ImagesHOT).filter(
-#             models.ImagesHOT.crossmatched == False).order_by(models.ImagesHOT.id)
-# 
-#     def generate(self):
-#         for img in self.imgs_to_process:
-# 
-#             detect_to_cx = self.session.query(models.DetectedHOT).filter(
-#                 img.id==models.DetectedHOT.image_id).all()
-# 
-#             simul_to_cx = self.session.query(models.Simulated).filter(
-#                 img.id==models.Simulated.image_id_hot).all()
-# 
-#             yield [img, detect_to_cx, simul_to_cx]
-# 
-#     def validate(self, batch_list):
-#         return isinstance(batch_list, list)
-# 
-#     def process(self, batch_list):
-# 
-#         img, detect_to_cx, simul_to_cx = batch_list
-#         if len(detect_to_cx) is 0:
-#             print('no detections')
-#             for asim in simul_to_cx:
-#                 und = models.Undetected()
-#                 und.simulated = asim
-#                 self.session.add(und)
-#             img.crossmatched = True
-#             return
-#         IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
-# 
-#         for i in range(len(IDs)):
-#             if IDs[i]>0:
-#                 real = models.RealsHOT()
-#                 real.detected_id = IDs[i]
-#                 real.simulated = simul_to_cx[i]
-#                 self.session.add(real)
-#             else:
-#                 und = models.UndetectedHOT()
-#                 und.simulated = simul_to_cx[i]
-#                 self.session.add(und)
-# 
-#         for detect in detect_to_cx:
-#             if detect.id not in IDs:
-#                 bogus = models.BogusHOT()
-#                 bogus.detected = detect
-#                 self.session.add(bogus)
-# 
-#                 detect.IS_REAL = False
-#             else:
-#                 detect.IS_REAL = True
-# 
-#         img.crossmatched = True
+    def setup(self):
+        self.session.autoflush = False
+        self.imgs_to_process = self.session.query(models.Images).filter(
+            models.Images.crossmatched == False).order_by(models.Images.id)
+
+    def generate(self):
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.Detected).filter(
+                img.id==models.Detected.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id).all()
+
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
+    def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print('no detections')
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
+        IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.Reals()
+                real.detected_id = int(IDs[i])
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.Undetected()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.Bogus()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True
+
+
+class StepSCrossMatch(run.Step):
+
+    def setup(self):
+        self.imgs_to_process = self.session.query(models.SImages).filter(
+            models.SImages.crossmatched == False).order_by(models.SImages.id)
+
+    def generate(self):
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.SDetected).filter(
+                img.id==models.SDetected.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id).all()
+
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
+    def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print('no detections')
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
+        IDs = u.matching(detect_to_cx, simul_to_cx, sep=True, radius=2.5)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.SReals()
+                real.detected_id = int(IDs[i])
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.SUndetected()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.SBogus()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True
+
+
+class StepSCorrCrossMatch(run.Step):
+
+    def setup(self):
+        self.imgs_to_process = self.session.query(models.SCorrImages).filter(
+            models.SCorrImages.crossmatched == False).order_by(models.SCorrImages.id)
+
+    def generate(self):
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.SCorrDetected).filter(
+                img.id==models.SCorrDetected.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id).all()
+
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
+    def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print('no detections')
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
+        IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.5)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.SCorrReals()
+                real.detected_id = int(IDs[i])
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.SCorrUndetected()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.SCorrBogus()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True
+
+
+class StepCrossMatchOIS(run.Step):
+
+    def setup(self):
+        self.imgs_to_process = self.session.query(models.ImagesOIS).filter(
+            models.ImagesOIS.crossmatched == False).order_by(models.ImagesOIS.id)
+
+    def generate(self):
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.DetectedOIS).filter(
+                img.id==models.DetectedOIS.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id_ois).all()
+
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
+    def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print('no detections')
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+
+        IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.RealsOIS()
+                real.detected_id = int(IDs[i])
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.UndetectedOIS()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.BogusOIS()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True
+
+
+class StepCrossMatchHOT(run.Step):
+
+    def setup(self):
+        self.imgs_to_process = self.session.query(models.ImagesHOT).filter(
+            models.ImagesHOT.crossmatched == False).order_by(models.ImagesHOT.id)
+
+    def generate(self):
+        for img in self.imgs_to_process:
+
+            detect_to_cx = self.session.query(models.DetectedHOT).filter(
+                img.id==models.DetectedHOT.image_id).all()
+
+            simul_to_cx = self.session.query(models.Simulated).filter(
+                img.id==models.Simulated.image_id_hot).all()
+
+            yield [img, detect_to_cx, simul_to_cx]
+
+    def validate(self, batch_list):
+        return isinstance(batch_list, list)
+
+    def process(self, batch_list):
+
+        img, detect_to_cx, simul_to_cx = batch_list
+        if len(detect_to_cx) is 0:
+            print('no detections')
+            for asim in simul_to_cx:
+                und = models.Undetected()
+                und.simulated = asim
+                self.session.add(und)
+            img.crossmatched = True
+            return
+        IDs = u.matching(detect_to_cx, simul_to_cx, radius=2.)
+
+        for i in range(len(IDs)):
+            if IDs[i]>0:
+                real = models.RealsHOT()
+                real.detected_id = int(IDs[i])
+                real.simulated = simul_to_cx[i]
+                self.session.add(real)
+            else:
+                und = models.UndetectedHOT()
+                und.simulated = simul_to_cx[i]
+                self.session.add(und)
+
+        for detect in detect_to_cx:
+            if detect.id not in IDs:
+                bogus = models.BogusHOT()
+                bogus.detected = detect
+                self.session.add(bogus)
+
+                detect.IS_REAL = False
+            else:
+                detect.IS_REAL = True
+
+        img.crossmatched = True

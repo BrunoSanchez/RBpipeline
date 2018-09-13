@@ -16,7 +16,8 @@ LOG_LEVEL = logging.WARNING #  INFO DEBUG
 
 LOG_FORMAT = "[RBogus-%(levelname)s @ %(asctime)-15s] %(message)s"
 
-CONNECTION = 'postgresql://jarvis:Bessel0@toritos/resimulation'
+CONNECTION = 'postgresql://jarvis:Bessel0@192.168.7.200:5432/resimulation_docker'
+#CONNECTION = 'postgresql://jarvis:Bessel0@172.18.123.55:5432/resimulation'
 #CONNECTION = 'sqlite:///resimulation-dev.db'
 
 LOADER = "rbogus.load.Load"
@@ -30,7 +31,6 @@ STEPS = [
     "rbogus.steps.StepSCorrCrossMatch",
     "rbogus.steps.StepCrossMatchOIS",
     "rbogus.steps.StepCrossMatchHOT"
-
 ]
 
 ALERTS = []
