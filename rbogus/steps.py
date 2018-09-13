@@ -36,19 +36,25 @@ class RunSimulations(run.Step):
     def generate(self):
         sims = self.session.query(models.Simulation).filter_by(
                     executed=False).filter_by(loaded=False).order_by(
-                    func.random()).limit(5000)
+                    func.random()).limit(100)
         for asim in sims:
             asim.loaded = True
         self.session.commit()
         
         sims = np.array(list(sims))
-        size = int(len(sims) / 48) or 1
+        size = int(len(sims) / 16) or 1
 
         for i_chunk, chunk in enumerate(np.array_split(sims, size)):
-            if i_chunk<3:
+            if i_chunk<5:
+                self.session.commit()
                 yield chunk
             else:
                 break
+
+    # def teardown(self, batch_list):
+    #     for asim in batch_list:
+    #         asim.loaded = False
+    #     self.session.commit()
 
     def validate(self, batch_list):
         return isinstance(batch_list, np.ndarray)
@@ -63,14 +69,16 @@ class RunSimulations(run.Step):
 
         #batch_res = [gen_diff.main(self.as_dict(batch_list[0]))]
         
-        with Parallel(n_jobs=24, backend='multiprocessing') as jobs:
-            batch_res = jobs(
-                delayed(gen_diff.main)(params)
-                for params in bp)
+        with Parallel(n_jobs=8, backend='multiprocessing') as jobs:
+             batch_res = jobs(
+                 delayed(gen_diff.main)(params)
+                 for params in bp)
         #import ipdb; ipdb.set_trace() 
         
+        #for params, asim in zip(bp, batch_list):
         for results, params, asim in zip(batch_res, bp, batch_list):
             #print(type(results), params, type(asim))
+            #results = gen_diff.main(params)
 
             if results == 'error101':
                 asim.executed = True
