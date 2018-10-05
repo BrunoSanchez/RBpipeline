@@ -1,13 +1,13 @@
 """Local settings for rbpipeline"""
 
-#PATH = "/home/bruno/Data/NewRBpipeline/output"
+PATH = "/home/bruno/Data/NewRBpipeline/output_docker"
 
 COMPRESS_AFTER_SIMULATE = True #False
 #~ IMGS_PATH = '/home/bruno/Data/NewRBpipeline/images'
 #~ CONFIG_PATH = '/home/bruno/Data/NewRBpipeline/config'
 #~ CATS_PATH = '/home/bruno/Data/NewRBpipeline/cats'
 
-PATH = '/mnt/is0/bos0109/data_sim_O2/output'
+#PATH = '/mnt/is0/bos0109/data_sim_O2/output'
 
 #IMGS_PATH = '/mnt/is0/bos0109/data_sim_O2/images'
 #CONFIG_PATH = '/mnt/is0/bos0109/data_sim_O2/config'
@@ -26,7 +26,8 @@ else:
     print('generating cube')
     SIM_CUBE = []
 
-    for ref_starzp in [4e3, 8e3, 16e3, 32e3, 64e3]:
+    #for ref_starzp in [4e3, 8e3, 16e3, 32e3, 64e3]:
+    for ref_starzp in [128e3, 256e3]:
         for ref_starslope in [0.1, 0.5, 0.9]:
             for ref_fwhm in [0.8, 1., 1.3]:
                     for m1, m2 in zip([0.4, .6, 1.54], [0.1, 0.15, 0.25]):

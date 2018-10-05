@@ -36,26 +36,21 @@ class RunSimulations(run.Step):
     def generate(self):
         sims = self.session.query(models.Simulation).filter_by(
                     executed=False).filter_by(loaded=False).order_by(
-                    func.random()).limit(100)
+                    func.random()).limit(1000)
         for asim in sims:
             asim.loaded = True
         self.session.commit()
-        
+
         sims = np.array(list(sims))
         size = int(len(sims) / 16) or 1
 
         for i_chunk, chunk in enumerate(np.array_split(sims, size)):
-            if i_chunk<5:
-                self.session.commit()
+            if i_chunk<5000:
+                #self.session.commit()
                 yield chunk
             else:
                 break
 
-    #~ def setup(self):
-        #~ self.jobs = Parallel(n_jobs=1, backend='multiprocessing')
-
-    #~ def teardown(self, *args):
-        #~ del self.jobs
 
     def validate(self, batch_list):
         return isinstance(batch_list, np.ndarray)
@@ -65,27 +60,17 @@ class RunSimulations(run.Step):
         params["path"] = a_sim.path
         return params
 
-    #~ def process(self, batch_list):
-        #~ import statprof
-        #~ statprof.start()
-        #~ try:
-            #~ self.do_process(batch_list)
-        #~ finally:
-            #~ statprof.stop()
-            #~ statprof.display()
-            #~ import ipdb; ipdb.set_trace()
-
     #~ def do_process(self, batch_list):
     def process(self, batch_list):
         bp = map(self.as_dict, batch_list)
 
-        with Parallel(n_jobs=2, backend='multiprocessing') as jobs:
-            batch_res = jobs(delayed(gen_diff.main)(params)
-                                for params in bp)
+        #with Parallel(n_jobs=4, backend='multiprocessing') as jobs:
+        #    batch_res = jobs(delayed(gen_diff.main)(params)
+        #                        for params in bp)
 
-        for results, params, asim in zip(batch_res, bp, batch_list):
-        #~ for params, asim in zip(bp, batch_list):
-            #~ results = gen_diff.main(params)
+        #for results, params, asim in zip(batch_res, bp, batch_list):
+        for params, asim in zip(bp, batch_list):
+            results = gen_diff.main(params)
 
             if results == 'error101':
                 asim.executed = True
@@ -119,16 +104,11 @@ class RunSimulations(run.Step):
             # =====================================================================
             image = models.Images()
             image.path = params['path']
-            image.simulationi_id = asim.id
+            image.simulation_id = params['id']
             image.crossmatched = False
             image.exec_time = times[0]
 
             self.session.add(image)
-            #self.session.commit()
-
-            detections['image_id'] = np.repeat(image.id, len(detections))
-            detections.to_sql('Detected', self.session.get_bind(),
-                              if_exists='append', index=False)
 
             # ==================================================================
             # sdetect
@@ -140,16 +120,6 @@ class RunSimulations(run.Step):
             simage.exec_time = times[0]
 
             self.session.add(simage)
-            #self.session.commit()
-
-            #import ipdb; ipdb.set_trace()
-            sdetections['image_id'] = np.repeat(simage.id, len(sdetections))
-            sdetections['xmin_col'] = sdetections['xmin']
-            sdetections['xmax_col'] = sdetections['xmax']
-            sdetections.drop(['xmin', 'xmax'], axis=1, inplace=True)
-            sdetections.to_sql('SDetected', self.session.get_bind(),
-                               if_exists='append', index=False)
-
             # =====================================================================
             # scorrdetect
             # =====================================================================
@@ -160,12 +130,6 @@ class RunSimulations(run.Step):
             scorrimage.exec_time = times[0]
 
             self.session.add(scorrimage)
-            #self.session.commit()
-
-            scorrdetections['image_id'] = np.repeat(scorrimage.id, len(scorrdetections))
-            scorrdetections.to_sql('SCorrDetected', self.session.get_bind(),
-                                    if_exists='append', index=False)
-
             # =====================================================================
             # OIS
             # =====================================================================
@@ -176,22 +140,40 @@ class RunSimulations(run.Step):
             image_ois.exec_time = times[1]
 
             self.session.add(image_ois)
-            #self.session.commit()
-
-            detections_ois['image_id'] = np.repeat(image_ois.id, len(detections_ois))
-            detections_ois.to_sql('DetectedOIS', self.session.get_bind(),
-                                  if_exists='append', index=False)
-
             # =====================================================================
             # HOTPANTS
             # =====================================================================
             image_hot = models.ImagesHOT()
             image_hot.path = diff_hot_path
+            image_hot.simulation_id = params['id']
             image_hot.crossmatched = False
             image_hot.exec_time = times[2]
 
             self.session.add(image_hot)
-            #self.session.commit()
+            # =============================================================================
+            # Commits and table loadings
+            # =============================================================================
+
+            self.session.commit()
+
+            detections['image_id'] = np.repeat(image.id, len(detections))
+            detections.to_sql('Detected', self.session.get_bind(),
+                              if_exists='append', index=False)
+
+            scorrdetections['image_id'] = np.repeat(scorrimage.id, len(scorrdetections))
+            scorrdetections.to_sql('SCorrDetected', self.session.get_bind(),
+                                    if_exists='append', index=False)
+
+            sdetections['image_id'] = np.repeat(simage.id, len(sdetections))
+            sdetections['xmin_col'] = sdetections['xmin']
+            sdetections['xmax_col'] = sdetections['xmax']
+            sdetections.drop(['xmin', 'xmax'], axis=1, inplace=True)
+            sdetections.to_sql('SDetected', self.session.get_bind(),
+                               if_exists='append', index=False)
+
+            detections_ois['image_id'] = np.repeat(image_ois.id, len(detections_ois))
+            detections_ois.to_sql('DetectedOIS', self.session.get_bind(),
+                                  if_exists='append', index=False)
 
             detections_hot['image_id'] = np.repeat(image_hot.id, len(detections_hot))
             detections_hot.to_sql('DetectedHOT', self.session.get_bind(),
@@ -213,7 +195,24 @@ class RunSimulations(run.Step):
             asim.failed_to_subtract = False
             asim.possible_saturation = False
             asim.loaded = False
+            self.session.commit()
             print('\n loaded asim code = {}\n\n'.format(asim.code))
+
+    #~ def setup(self):
+        #~ self.jobs = Parallel(n_jobs=1, backend='multiprocessing')
+
+    #~ def teardown(self, *args):
+        #~ del self.jobs
+
+    #~ def process(self, batch_list):
+        #~ import statprof
+        #~ statprof.start()
+        #~ try:
+            #~ self.do_process(batch_list)
+        #~ finally:
+            #~ statprof.stop()
+            #~ statprof.display()
+            #~ import ipdb; ipdb.set_trace()
 
 
 
@@ -221,8 +220,9 @@ class StepCrossMatch(run.Step):
 
     def setup(self):
         self.session.autoflush = False
-        self.imgs_to_process = self.session.query(models.Images).filter(
-            models.Images.crossmatched == False).order_by(models.Images.id)
+        self.counter = 0
+        self.imgs_to_process = self.session.query(models.Images).filter_by(
+            crossmatched=False).order_by(func.random()) #models.Images.id)
 
     def generate(self):
         for img in self.imgs_to_process:
@@ -239,7 +239,7 @@ class StepCrossMatch(run.Step):
         return isinstance(batch_list, list)
 
     def process(self, batch_list):
-
+        self.counter += 1
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
             print('no detections')
@@ -274,13 +274,17 @@ class StepCrossMatch(run.Step):
                 detect.IS_REAL = True
 
         img.crossmatched = True
+        if self.counter%10==0:
+            self.session.commit()
 
 
 class StepSCrossMatch(run.Step):
 
     def setup(self):
+        self.counter = 0
+        self.session.autoflush = False
         self.imgs_to_process = self.session.query(models.SImages).filter(
-            models.SImages.crossmatched == False).order_by(models.SImages.id)
+            models.SImages.crossmatched == False).order_by(func.random())#models.SImages.id)
 
     def generate(self):
         for img in self.imgs_to_process:
@@ -297,7 +301,7 @@ class StepSCrossMatch(run.Step):
         return isinstance(batch_list, list)
 
     def process(self, batch_list):
-
+        self.counter += 1
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
             print('no detections')
@@ -332,13 +336,18 @@ class StepSCrossMatch(run.Step):
                 detect.IS_REAL = True
 
         img.crossmatched = True
+        if self.counter%10==0:
+            self.session.commit()
+
 
 
 class StepSCorrCrossMatch(run.Step):
 
     def setup(self):
+        self.counter = 0
+        self.session.autoflush = False
         self.imgs_to_process = self.session.query(models.SCorrImages).filter(
-            models.SCorrImages.crossmatched == False).order_by(models.SCorrImages.id)
+            models.SCorrImages.crossmatched == False).order_by(func.random())#models.SCorrImages.id)
 
     def generate(self):
         for img in self.imgs_to_process:
@@ -355,7 +364,7 @@ class StepSCorrCrossMatch(run.Step):
         return isinstance(batch_list, list)
 
     def process(self, batch_list):
-
+        self.counter += 1
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
             print('no detections')
@@ -390,13 +399,17 @@ class StepSCorrCrossMatch(run.Step):
                 detect.IS_REAL = True
 
         img.crossmatched = True
+        if self.counter%10==0:
+            self.session.commit()
 
 
 class StepCrossMatchOIS(run.Step):
 
     def setup(self):
+        self.counter = 0
+        self.session.autoflush = False
         self.imgs_to_process = self.session.query(models.ImagesOIS).filter(
-            models.ImagesOIS.crossmatched == False).order_by(models.ImagesOIS.id)
+            models.ImagesOIS.crossmatched == False).order_by(func.random())#models.ImagesOIS.id)
 
     def generate(self):
         for img in self.imgs_to_process:
@@ -413,7 +426,7 @@ class StepCrossMatchOIS(run.Step):
         return isinstance(batch_list, list)
 
     def process(self, batch_list):
-
+        self.counter += 1
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
             print('no detections')
@@ -448,13 +461,19 @@ class StepCrossMatchOIS(run.Step):
                 detect.IS_REAL = True
 
         img.crossmatched = True
+        if self.counter%10==0:
+            self.session.commit()
+
 
 
 class StepCrossMatchHOT(run.Step):
 
     def setup(self):
-        self.imgs_to_process = self.session.query(models.ImagesHOT).filter(
-            models.ImagesHOT.crossmatched == False).order_by(models.ImagesHOT.id)
+        self.counter = 0
+        self.session.autoflush = False
+        self.imgs_to_process = list(self.session.query(models.ImagesHOT).filter(
+            models.ImagesHOT.crossmatched == False).order_by(func.random()
+            ).all()) #models.ImagesHOT.id)
 
     def generate(self):
         for img in self.imgs_to_process:
@@ -471,7 +490,7 @@ class StepCrossMatchHOT(run.Step):
         return isinstance(batch_list, list)
 
     def process(self, batch_list):
-
+        self.counter += 1
         img, detect_to_cx, simul_to_cx = batch_list
         if len(detect_to_cx) is 0:
             print('no detections')
@@ -505,3 +524,93 @@ class StepCrossMatchHOT(run.Step):
                 detect.IS_REAL = True
 
         img.crossmatched = True
+        if self.counter%10==0:
+            self.session.commit()
+
+
+class SanitizeImages(run.Step):
+
+    model = models.Images
+
+    conditions = [models.Images.simulation_id==None]
+
+    def process(self, img):
+        #for img in imgs:
+        img_code = img.path.split('/')[-1]
+
+        simu = self.session.query(models.Simulation
+             ).filter(models.Simulation.code==img_code).all()
+        if len(simu) is 1:
+            img.simulation_id = simu[0].id
+        #self.session.commit()
+
+class SanitizeImagesOIS(run.Step):
+
+    model = models.ImagesOIS
+
+    conditions = [models.ImagesOIS.simulation_id==None]
+
+    def process(self, img):
+        #for img in imgs:
+        img_code = img.path.split('/')[-1]
+
+        simu = self.session.query(models.Simulation
+             ).filter(models.Simulation.code==img_code).all()
+        if len(simu) is 1:
+            img.simulation_id = simu[0].id
+        #self.session.commit()
+
+class SanitizeImagesHOT(run.Step):
+
+    model = models.ImagesHOT
+
+    conditions = [models.ImagesHOT.simulation_id==None]
+
+    def process(self, img):
+        #for img in imgs:
+        img_code = img.path.split('/')[-1]
+
+        simu = self.session.query(models.Simulation
+             ).filter(models.Simulation.code==img_code).all()
+        if len(simu) is 1:
+            img.simulation_id = simu[0].id
+        #self.session.commit()
+
+
+class SanitizeSImages(run.Step):
+
+    model = models.SImages
+
+    conditions = [models.SImages.simulation_id==None]
+
+    def process(self, img):
+        #for img in imgs:
+        img_code = img.path.split('/')[-1]
+
+        simu = self.session.query(models.Simulation
+             ).filter(models.Simulation.code==img_code).all()
+        if len(simu) is 1:
+            img.simulation_id = simu[0].id
+        #self.session.commit()
+
+class SanitizeSCorrImages(run.Step):
+
+    model = models.SCorrImages
+
+    conditions = [models.SCorrImages.simulation_id==None]
+
+    def process(self, img):
+        #for img in imgs:
+        img_code = img.path.split('/')[-1]
+
+        simu = self.session.query(models.Simulation
+             ).filter(models.Simulation.code==img_code).all()
+        if len(simu) is 1:
+            img.simulation_id = simu[0].id
+        #self.session.commit()
+
+
+
+
+
+

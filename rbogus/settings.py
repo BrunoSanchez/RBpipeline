@@ -12,11 +12,12 @@ import numpy as np
 
 DEBUG_PROCESS = True
 
-LOG_LEVEL = logging.WARNING #  INFO DEBUG
+LOG_LEVEL = logging.DEBUG #  INFO DEBUG
 
 LOG_FORMAT = "[RBogus-%(levelname)s @ %(asctime)-15s] %(message)s"
 
-CONNECTION = 'postgresql://jarvis:Bessel0@192.168.7.200:5432/resimulation_docker'
+CONNECTION = 'postgresql://jarvis:Bessel0@172.18.122.4:5432/resimulation_docker'
+#CONNECTION = 'postgresql://jarvis:Bessel0@toritos:5432/resimu_docker'
 #CONNECTION = 'postgresql://jarvis:Bessel0@172.18.123.55:5432/resimulation'
 #CONNECTION = 'sqlite:///resimulation-dev.db'
 
@@ -30,7 +31,12 @@ STEPS = [
     "rbogus.steps.StepSCrossMatch",
     "rbogus.steps.StepSCorrCrossMatch",
     "rbogus.steps.StepCrossMatchOIS",
-    "rbogus.steps.StepCrossMatchHOT"
+    "rbogus.steps.StepCrossMatchHOT",
+    "rbogus.steps.SanitizeImages",
+    "rbogus.steps.SanitizeSImages",
+    "rbogus.steps.SanitizeSCorrImages",
+    "rbogus.steps.SanitizeImagesHOT",
+    "rbogus.steps.SanitizeImagesOIS"
 ]
 
 ALERTS = []

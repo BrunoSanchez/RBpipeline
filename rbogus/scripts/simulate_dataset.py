@@ -23,6 +23,7 @@
 #
 import os
 import shutil
+import time
 #import matplotlib.pyplot as plt
 import numpy as np
 from astropy.io import fits
@@ -41,6 +42,7 @@ from . import stuffskywrapper as w
 from corral.conf import settings
 
 def main(params):
+    t0 = time.time()
     imgs_dir = params['path']
     conf_dir = os.path.join(imgs_dir, "conf")
     if not os.path.isdir(conf_dir):
@@ -149,14 +151,14 @@ def main(params):
 
     new = w.run_sky(os.path.join(conf_dir, 'conf.sky'), cat_name,
                     img_path=os.path.join(imgs_dir, 'new.fits'))
-
+    tf = time.time()
+    print('Took {} time to generate sky fits'.format(t0-tf))
     print('Images to be subtracted: {} {}'.format(ref, new))
 
 ##  With properimage
     #with ps.ImageSubtractor(ref, new, align=False, solve_beta=False) as sub:
     #    D, P, S = sub.subtract()
     print('Starting properimage')
-    import time
     t0 = time.time()
     try:
         D, P, S, mask = ps.diff(str(ref), str(new), align=False, beta=False,
@@ -168,7 +170,7 @@ def main(params):
     utils.encapsule_R(D, path=os.path.join(imgs_dir, 'diff.fits'))
     utils.encapsule_R(P, path=os.path.join(imgs_dir, 'psf_d.fits'))
     utils.encapsule_R(S, path=os.path.join(imgs_dir, 's_diff.fits'))
-    print('Finish storing properimage')
+    print('Finish storing properimage. Took {} time'.format(dt_z))
 
     # import ipdb; ipdb.set_trace()
     scorrdetected = utils.find_S_local_maxima(S, threshold=3.5)
@@ -196,18 +198,18 @@ def main(params):
     t0 = time.time()
     n = fits.getdata(new)
     r = fits.getdata(ref)
-    import statprof
-    statprof.start()
-    try:
-        ois_d = ois.optimal_system(n, r, method='Bramich')[0]
-    finally:
-        statprof.stop()
-        statprof.display(open('output_statprof.txt', 'w'))
+    #import statprof
+    #statprof.start()
+    #try:
+    ois_d = ois.optimal_system(n, r, method='Bramich')[0]
+    #finally:
+        #statprof.stop()
+        #statprof.display(open('output_statprof.txt', 'w'))
     del(n)
     del(r)
     dt_o = time.time() - t0
     utils.encapsule_R(ois_d, path=os.path.join(imgs_dir, 'diff_ois.fits'))
-    print('Finish storing OIS')
+    print('Finish storing OIS. Took {} time'.format(dt_o))
 
 ##  With HOTPANTS
     print('Starting hotpants')
@@ -215,7 +217,7 @@ def main(params):
     os.system('hotpants -v 0 -inim {} -tmplim {} -outim {} -tu 400000 -iu 40000'.format(new, ref,
         os.path.join(imgs_dir, 'diff_hot.fits')))
     dt_h = time.time() - t0
-    print('Finish hotpants')
+    print('Finish hotpants. Took {} time'.format(dt_h))
 
     return [newcat.to_pandas(), [dt_z, dt_o, dt_h]]
 
